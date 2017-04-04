@@ -33,53 +33,40 @@ int main(int argc, char* argv[]) {
 
     uint32_t size = width*height;
     char *old_ppm = new char[size];
-    char *new_ppm = new char[size];
     fread(old_ppm,size,1,f);
 
-    int row, column, colour, tmp;
+    int tmp;
 
-    register uint32_t idx;
-    for(idx = 0; idx < size; idx++){
-        tmp = 0;
-        tmp += 5*old_ppm[idx];
-        tmp -= idx >= 3 ? old_ppm[idx - 3] : 0;
-        tmp -= idx < size - 3 ? old_ppm[idx + 3] : 0;
-        tmp -= idx >= width  ? old_ppm[idx - width] : 0;
-        tmp -= idx < size - width ? old_ppm[idx + width] : 0;
-
-        tmp = tmp > 255 ? 255 : tmp;
-        tmp = tmp < 0 ? 0 : tmp;
-
-        new_ppm[idx] = (char) tmp;
-    }
-
-
-/*
-    for(row = 0; row < height; row++){
-        for(column = 0; column < width; column++){
-
-            for(colour = 0; colour < 3; colour++){
-                tmp = 0;
-                tmp -= row > 0 ? old_ppm[width * (row - 1) + column + colour] : 0;
-                tmp -= column > 0 ? old_ppm[width * row + (column - 1) + colour] : 0;
-                tmp += 5*old_ppm[width * row + column + colour];
-                tmp -= column < width - 1 - colour ? old_ppm[width * row + (column + 1) + colour] : 0;
-                tmp -= row < height - 1 ? old_ppm[width * (row + 1) + column + colour] : 0;
-
-                tmp = tmp > 255 ? 255 : tmp;
-                tmp = tmp < 0 ? 0 : tmp;
-
-                new_ppm[width * row + column + colour] = (char) tmp;
-            }
-        }
-    }
-*/
-
-
-    //write ppm
     FILE *newf = fopen(output, "wb");
     fprintf(newf,"P6\n%d\n%d\n%d\n",picture_width, height, max_colour);
-    fwrite(new_ppm, width, height, newf);
+
+    register uint32_t idx = 0, w = 1;
+    for(; idx != size;){
+
+        if (w == picture_width || w == 1 || idx < width || idx >= (width*height-width)) {
+            fputc(old_ppm[idx], f);
+            fputc(old_ppm[idx+1], f);
+            fputc(old_ppm[idx+2], f);
+
+            if (w == picture_width)
+                w = 1;
+            else ++w;
+            idx += 3;
+        } else {
+            for(int i = 0; i < 3; idx++, i++){
+                tmp = 5*old_ppm[idx];
+                tmp -= old_ppm[idx - 3];
+                tmp -= old_ppm[idx + 3];
+                tmp -= old_ppm[idx - width];
+                tmp -= old_ppm[idx + width];
+                tmp = tmp > 255 ? 255 : tmp;
+                tmp = tmp < 0 ? 0 : tmp;
+                fputc(tmp, newf);
+            }
+            w++;
+        }
+
+    }
 
     fclose(newf);
     fclose(f);
