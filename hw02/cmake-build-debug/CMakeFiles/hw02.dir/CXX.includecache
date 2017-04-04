@@ -11,4 +11,8 @@ iostream
 -
 string.h
 -
+stdio.h
+-
+stdlib.h
+-
 
