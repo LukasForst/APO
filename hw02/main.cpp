@@ -3,6 +3,13 @@
 #include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+/*
+ *   0  -1  0
+    -1  5   -1
+     0	-1	0
+ */
 
 int main(int argc, char* argv[]) {
     char *fname;
@@ -20,18 +27,46 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    int height, width, max_colour;
-    fscanf (f, "P6 %d %d %d",&width, &height, &max_colour);
+    uint32_t height, width, max_colour, picture_width;
+    fscanf (f, "P6 %d %d %d",&picture_width, &height, &max_colour);
+    width = 3*picture_width;
 
-    char *data = new char[width*height * 3];
-    fread(data,width*height * 3,1,f);
+    uint32_t size = width*height;
+    char *old_ppm = new char[size];
+    char *new_ppm = new char[size];
+    fread(old_ppm,size,1,f);
 
+
+    int row, column, colour, tmp;
+
+    for(row = 0; row < height; row++){
+        for(column = 0; column < width; column += 3){
+
+            for(colour = 0; colour < 3; colour++){
+                //new_ppm[width * row + column + colour] = (-1)*old_ppm[width * (row - 1) + column + colour];
+                tmp = 0;
+                tmp
+                        += row > 0 ? (-1)*old_ppm[width * (row - 1) + column + colour] : 0;
+                tmp
+                        += column > 0 ? (-1)*old_ppm[width * row + (column - 1) + colour] : 0;
+                tmp
+                        += 5*old_ppm[width * row + column + colour];
+                tmp
+                        += column < width - 1 - colour ? (-1)*old_ppm[width * row + (column + 1) + colour] : 0;
+                tmp
+                        += row < height - 1 ? (-1)*old_ppm[width * (row + 1) + column + colour] : 0;
+                tmp = tmp > 255 ? 255 : tmp;
+                tmp = tmp < 0 ? 0 : tmp;
+                new_ppm[width * row + column + colour] = (char) tmp;
+            }
+        }
+    }
 
 
     //write ppm
     FILE *newf = fopen(output, "wb");
-    fprintf(newf,"P6\n%d\n%d\n%d",width, height, max_colour);
-    fwrite(data, width * 3, height, newf);
+    fprintf(newf,"P6\n%d\n%d\n%d\n",picture_width, height, max_colour);
+    fwrite(new_ppm, width, height, newf);
 
     fclose(newf);
     fclose(f);
