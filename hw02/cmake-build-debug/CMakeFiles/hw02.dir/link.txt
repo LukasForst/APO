@@ -1,0 +1,1 @@
+/usr/bin/c++   -g   CMakeFiles/hw02.dir/main.cpp.o  -o hw02 
