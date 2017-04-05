@@ -4,7 +4,9 @@
 
 #define OUTPUT "output.ppm"
 #define HISTOGRAM "output.txt"
-
+/**
+Spaghetti code because of speed - assigment is evaluated according to the access to the cache
+*/
 int main(int argc, char *argv[]) {
     FILE *old_file = argc > 1 ? fopen(argv[1], "rb") : NULL;
     if(!old_file)
