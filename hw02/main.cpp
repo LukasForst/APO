@@ -18,37 +18,32 @@ int main(int argc, char *argv[]) {
             active_column = 1;
 
     //allocate and read
-    unsigned char *old_ppm = (unsigned char*)malloc(sizeof(unsigned char) * size);
-    unsigned char *solution = (unsigned char*)malloc(sizeof(unsigned char) * size);
+    register unsigned char *old_ppm = (unsigned char *) malloc(sizeof(unsigned char) * size);
     error = fread(old_ppm, sizeof(unsigned char), (size_t) size, old_file);
     fclose(old_file);
+    register unsigned char *solution = (unsigned char *) malloc(sizeof(unsigned char) * size);
 
-    int gray_scale[] = {0,0,0,0,0};
-    int rounded;
-    double ratio[] = {0.2126, 0.7152, 0.0722};
-
+    register int gray_scale[] = {0, 0, 0, 0, 0};
+    register int rounded;
+    register double ratio[] = {0.2126, 0.7152, 0.0722};
     register double gray = 0;
-    //write image
 
     //first row
     for(;idx < array_width;){
         gray += old_ppm[idx] * ratio[0];
-        //fputc(old_ppm[idx++], new_ppm);
         solution[idx] = old_ppm[idx];
         idx++;
 
         gray += old_ppm[idx] * ratio[1];
-//        fputc(old_ppm[idx++], new_ppm);
         solution[idx] = old_ppm[idx];
         idx++;
 
-
         gray += old_ppm[idx] * ratio[2];
-//        fputc(old_ppm[idx++], new_ppm);
         solution[idx] = old_ppm[idx];
         idx++;
 
         rounded = round(gray);
+        gray = 0;
         if(rounded < 51){
             gray_scale[0]++;
         } else if(rounded < 102){
@@ -60,50 +55,29 @@ int main(int argc, char *argv[]) {
         } else {
             gray_scale[4]++;
         }
-        gray = 0;
     }
 
     register int fo_end = size - array_width;
     for (;idx < fo_end;) {
-        if(active_column == width){
+        if (active_column == width || active_column == 1) {
             gray += old_ppm[idx] * ratio[0];
-//            fputc(old_ppm[idx++], new_ppm);
             solution[idx] = old_ppm[idx];
             idx++;
 
             gray += old_ppm[idx] * ratio[1];
-//            fputc(old_ppm[idx++], new_ppm);
             solution[idx] = old_ppm[idx];
             idx++;
 
             gray += old_ppm[idx] * ratio[2];
-//            fputc(old_ppm[idx++], new_ppm);
             solution[idx] = old_ppm[idx];
             idx++;
 
-            active_column = 1;
-        } else if(active_column == 1){
-            gray += old_ppm[idx] * ratio[0];
-//            fputc(old_ppm[idx++], new_ppm);
-            solution[idx] = old_ppm[idx];
-            idx++;
-
-            gray += old_ppm[idx] * ratio[1];
-//            fputc(old_ppm[idx++], new_ppm);
-            solution[idx] = old_ppm[idx];
-            idx++;
-
-            gray += old_ppm[idx] * ratio[2];
-//            fputc(old_ppm[idx++], new_ppm);
-            solution[idx] = old_ppm[idx];
-            idx++;
-
-            ++active_column;
+            active_column = active_column == width ? 1 : active_column + 1;
         } else {
             for(int i = 0; i < 3; ++i, ++idx){
-                current_pixel = 5*old_ppm[idx];
+                current_pixel = -old_ppm[idx - array_width];
                 current_pixel -= old_ppm[idx-3];
-                current_pixel -= old_ppm[idx-array_width];
+                current_pixel += 5 * old_ppm[idx];
                 current_pixel -= old_ppm[idx+3];
                 current_pixel -= old_ppm[idx+array_width];
 
@@ -112,14 +86,13 @@ int main(int argc, char *argv[]) {
 
                 //gray scale computation
                 gray += ratio[i]*current_pixel;
-
-//                fputc((char)current_pixel, new_ppm);
                 solution[idx] = current_pixel;
             }
             ++active_column;
         }
 
         rounded = round(gray);
+        gray = 0;
         if(rounded < 51){
             gray_scale[0]++;
         } else if(rounded < 102){
@@ -131,29 +104,26 @@ int main(int argc, char *argv[]) {
         } else {
             gray_scale[4]++;
         }
-        gray = 0;
     }
 
     //last row
     for(;idx < size;){
         gray += old_ppm[idx] * ratio[0];
-//        fputc(old_ppm[idx++], new_ppm);
         solution[idx] = old_ppm[idx];
         idx++;
 
         gray += old_ppm[idx] * ratio[1];
-//        fputc(old_ppm[idx++], new_ppm);
         solution[idx] = old_ppm[idx];
         idx++;
 
         gray += old_ppm[idx] * ratio[2];
-//        fputc(old_ppm[idx++], new_ppm);
         solution[idx] = old_ppm[idx];
         idx++;
 
-        active_column++;
+        ++active_column;
 
         rounded = round(gray);
+        gray = 0;
         if(rounded < 51){
             gray_scale[0]++;
         } else if(rounded < 102){
@@ -165,7 +135,6 @@ int main(int argc, char *argv[]) {
         } else {
             gray_scale[4]++;
         }
-        gray = 0;
 
     }
 
