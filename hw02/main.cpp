@@ -4,19 +4,12 @@
 
 #define OUTPUT "output.ppm"
 #define HISTOGRAM "output.txt"
-/**
-Spaghetti code because of speed - assigment is evaluated according to the access to the cache
-*/
-int main(int argc, char *argv[]) {
-    FILE *old_file = argc > 1 ? fopen(argv[1], "rb") : NULL;
-    if(!old_file)
-        return EXIT_FAILURE;
 
-    int width, height, color_max;
-    if (fscanf(old_file, "P6\n%d\n%d\n%d\n", &width, &height, &color_max) == 0){
-        fclose(old_file);
-        return EXIT_FAILURE;
-    }
+int main(int argc, char *argv[]) {
+    FILE *old_file = fopen(argv[1], "rb");
+
+    register int width, height, color_max, error;
+    error = fscanf(old_file, "P6\n%d\n%d\n%d\n", &width, &height, &color_max);
 
     register int current_pixel,
             idx = 0,
@@ -26,32 +19,36 @@ int main(int argc, char *argv[]) {
 
     //allocate and read
     unsigned char *old_ppm = (unsigned char*)malloc(sizeof(unsigned char) * size);
-    if (fread(old_ppm, sizeof(unsigned char), (size_t) size, old_file) == 0){
-        fclose(old_file);
-        return EXIT_FAILURE;
-    }
+    unsigned char *solution = (unsigned char*)malloc(sizeof(unsigned char) * size);
+    error = fread(old_ppm, sizeof(unsigned char), (size_t) size, old_file);
     fclose(old_file);
 
     int gray_scale[] = {0,0,0,0,0};
+    int rounded;
     double ratio[] = {0.2126, 0.7152, 0.0722};
 
     register double gray = 0;
     //write image
-    FILE *new_ppm = fopen(OUTPUT, "wb");
-    fprintf(new_ppm, "P6\n%d\n%d\n%d\n", width, height, color_max);
 
     //first row
     for(;idx < array_width;){
         gray += old_ppm[idx] * ratio[0];
-        fputc(old_ppm[idx++], new_ppm);
+        //fputc(old_ppm[idx++], new_ppm);
+        solution[idx] = old_ppm[idx];
+        idx++;
 
         gray += old_ppm[idx] * ratio[1];
-        fputc(old_ppm[idx++], new_ppm);
+//        fputc(old_ppm[idx++], new_ppm);
+        solution[idx] = old_ppm[idx];
+        idx++;
+
 
         gray += old_ppm[idx] * ratio[2];
-        fputc(old_ppm[idx++], new_ppm);
+//        fputc(old_ppm[idx++], new_ppm);
+        solution[idx] = old_ppm[idx];
+        idx++;
 
-        double rounded = round(gray);
+        rounded = round(gray);
         if(rounded < 51){
             gray_scale[0]++;
         } else if(rounded < 102){
@@ -66,29 +63,40 @@ int main(int argc, char *argv[]) {
         gray = 0;
     }
 
-    int fo_end = size-array_width;
+    register int fo_end = size - array_width;
     for (;idx < fo_end;) {
-
         if(active_column == width){
             gray += old_ppm[idx] * ratio[0];
-            fputc(old_ppm[idx++], new_ppm);
+//            fputc(old_ppm[idx++], new_ppm);
+            solution[idx] = old_ppm[idx];
+            idx++;
 
             gray += old_ppm[idx] * ratio[1];
-            fputc(old_ppm[idx++], new_ppm);
+//            fputc(old_ppm[idx++], new_ppm);
+            solution[idx] = old_ppm[idx];
+            idx++;
 
             gray += old_ppm[idx] * ratio[2];
-            fputc(old_ppm[idx++], new_ppm);
+//            fputc(old_ppm[idx++], new_ppm);
+            solution[idx] = old_ppm[idx];
+            idx++;
 
             active_column = 1;
         } else if(active_column == 1){
             gray += old_ppm[idx] * ratio[0];
-            fputc(old_ppm[idx++], new_ppm);
+//            fputc(old_ppm[idx++], new_ppm);
+            solution[idx] = old_ppm[idx];
+            idx++;
 
             gray += old_ppm[idx] * ratio[1];
-            fputc(old_ppm[idx++], new_ppm);
+//            fputc(old_ppm[idx++], new_ppm);
+            solution[idx] = old_ppm[idx];
+            idx++;
 
             gray += old_ppm[idx] * ratio[2];
-            fputc(old_ppm[idx++], new_ppm);
+//            fputc(old_ppm[idx++], new_ppm);
+            solution[idx] = old_ppm[idx];
+            idx++;
 
             ++active_column;
         } else {
@@ -105,12 +113,13 @@ int main(int argc, char *argv[]) {
                 //gray scale computation
                 gray += ratio[i]*current_pixel;
 
-                fputc((char)current_pixel, new_ppm);
+//                fputc((char)current_pixel, new_ppm);
+                solution[idx] = current_pixel;
             }
             ++active_column;
         }
 
-        double rounded = round(gray);
+        rounded = round(gray);
         if(rounded < 51){
             gray_scale[0]++;
         } else if(rounded < 102){
@@ -128,17 +137,23 @@ int main(int argc, char *argv[]) {
     //last row
     for(;idx < size;){
         gray += old_ppm[idx] * ratio[0];
-        fputc(old_ppm[idx++], new_ppm);
+//        fputc(old_ppm[idx++], new_ppm);
+        solution[idx] = old_ppm[idx];
+        idx++;
 
         gray += old_ppm[idx] * ratio[1];
-        fputc(old_ppm[idx++], new_ppm);
+//        fputc(old_ppm[idx++], new_ppm);
+        solution[idx] = old_ppm[idx];
+        idx++;
 
         gray += old_ppm[idx] * ratio[2];
-        fputc(old_ppm[idx++], new_ppm);
+//        fputc(old_ppm[idx++], new_ppm);
+        solution[idx] = old_ppm[idx];
+        idx++;
 
         active_column++;
 
-        double rounded = round(gray);
+        rounded = round(gray);
         if(rounded < 51){
             gray_scale[0]++;
         } else if(rounded < 102){
@@ -155,10 +170,15 @@ int main(int argc, char *argv[]) {
     }
 
     free(old_ppm);
+    FILE *new_ppm = fopen(OUTPUT, "wb");
+    fprintf(new_ppm, "P6\n%d\n%d\n%d\n", width, height, color_max);
+    fwrite(solution, size, 1, new_ppm);
     fclose(new_ppm);
+    free(solution);
+
     FILE *histogram = fopen(HISTOGRAM, "w");
     fprintf(histogram, "%d %d %d %d %d", gray_scale[0], gray_scale[1], gray_scale[2], gray_scale[3], gray_scale[4]);
     fclose(histogram);
-
-    return EXIT_SUCCESS;
+    error = 0;
+    return error;
 }
