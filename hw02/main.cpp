@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     fclose(old_file);
     register unsigned char *solution = (unsigned char *) malloc(sizeof(unsigned char) * size);
 
-    register int gray_scale[] = {0, 0, 0, 0, 0};
+    register int gray_scale[] = {0, 0, 0, 0, 0, 0};
     register int rounded;
     register double ratio[] = {0.2126, 0.7152, 0.0722};
     register double gray = 0;
@@ -44,17 +44,7 @@ int main(int argc, char *argv[]) {
 
         rounded = round(gray);
         gray = 0;
-        if(rounded < 51){
-            gray_scale[0]++;
-        } else if(rounded < 102){
-            gray_scale[1]++;
-        } else if(rounded < 153){
-            gray_scale[2]++;
-        } else if(rounded < 204){
-            gray_scale[3]++;
-        } else {
-            gray_scale[4]++;
-        }
+        gray_scale[(int) rounded / 51]++;
     }
 
     register int fo_end = size - array_width;
@@ -93,17 +83,7 @@ int main(int argc, char *argv[]) {
 
         rounded = round(gray);
         gray = 0;
-        if(rounded < 51){
-            gray_scale[0]++;
-        } else if(rounded < 102){
-            gray_scale[1]++;
-        } else if(rounded < 153){
-            gray_scale[2]++;
-        } else if(rounded < 204){
-            gray_scale[3]++;
-        } else {
-            gray_scale[4]++;
-        }
+        gray_scale[(int) rounded / 51]++;
     }
 
     //last row
@@ -124,18 +104,7 @@ int main(int argc, char *argv[]) {
 
         rounded = round(gray);
         gray = 0;
-        if(rounded < 51){
-            gray_scale[0]++;
-        } else if(rounded < 102){
-            gray_scale[1]++;
-        } else if(rounded < 153){
-            gray_scale[2]++;
-        } else if(rounded < 204){
-            gray_scale[3]++;
-        } else {
-            gray_scale[4]++;
-        }
-
+        gray_scale[(int) rounded / 51]++;
     }
 
     free(old_ppm);
@@ -146,7 +115,8 @@ int main(int argc, char *argv[]) {
     free(solution);
 
     FILE *histogram = fopen(HISTOGRAM, "w");
-    fprintf(histogram, "%d %d %d %d %d", gray_scale[0], gray_scale[1], gray_scale[2], gray_scale[3], gray_scale[4]);
+    fprintf(histogram, "%d %d %d %d %d", gray_scale[0], gray_scale[1], gray_scale[2], gray_scale[3],
+            gray_scale[4] + gray_scale[5]);
     fclose(histogram);
     error = 0;
     return error;
