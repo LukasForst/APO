@@ -1,14 +1,14 @@
-#CC=gcc
-CC=arm-linux-gnueabihf-gcc
+CC=gcc
+#CC=arm-linux-gnueabihf-gcc
+#CC=mips-elf-gcc
 CFLAGS=-g -std=c99 -pedantic -Wall
-LDFLAGS=-lrt -lpthread
 
 %.o:%.c
 	$(CC) $(CFLAGS) -c $<
 
-all: mzapo_lcdip
+all: program
 
-mzapo_lcdip: mzapo_lcdip.o
+program: main.o  subroutine.o  toplevel.o
 	$(CC) $(CFLAGS) $(LDFLAGS) -L. $^ -o $@
 
 
@@ -22,6 +22,6 @@ depend:
 	@touch depend
 
 clean:
-	rm -f *.o *.a mzapo_lcdip depend
+	rm -f *.o *.a program depend
 
 -include depend
