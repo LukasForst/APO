@@ -1,36 +1,28 @@
-/*******************************************************************
-  Simple program to check LCD functionality on MicroZed
-  based MZ_APO board designed by Petr Porazil at PiKRON
-
-  mzapo_lcdtest.c       - main and only file
-
-  (C) Copyright 2004 - 2017 by Pavel Pisa
-      e-mail:   pisa@cmp.felk.cvut.cz
-      homepage: http://cmp.felk.cvut.cz/~pisa
-      work:     http://www.pikron.com/
-      license:  any combination of GPL, LGPL, MPL or BSD licenses
-
- *******************************************************************/
-
-#define _POSIX_C_SOURCE 200112L
-
-#include <stdlib.h>
+//
+// Created by lukas on 5/1/17.
+//
 #include <stdio.h>
 #include <stdint.h>
-#include <time.h>
-#include <unistd.h>
+#include <stdlib.h>
 
-#include "mzapo_parlcd.h"
-#include "mzapo_phys.h"
-#include "mzapo_regs.h"
+#include "color.h"
+#include "sets.h"
 
-int main(int argc, char *argv[])
-{
-  printf("Hello world\n");
+int main() {
+    int width = 800, height = 600;
+    double c_real = -0.7, c_imag = 0.27015, move_x = 0, move_y = 0;
 
-  sleep(4);
+    FILE *fp = fopen("pic.ppm", "wb");
+    fprintf(fp, "P6\n%d\n%d\n255\n", width, height);
 
-  printf("Goodbye world\n");
+    color **j = generate_julia(width, height, move_x, move_y, c_real, c_imag, 400);
+    //color ** j = generate_mandelbrot(width, height, move_x, move_y, 100);
 
-  return 0;
+    for (int i = 0; i < width * height; i++) {
+        fwrite(*(j + i), sizeof(color), 1, fp);
+        free(*(j + i));
+    }
+    free(j);
+
+    fclose(fp);
 }

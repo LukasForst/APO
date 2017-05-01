@@ -20,31 +20,26 @@
 #include "mzapo_parlcd.h"
 #include "mzapo_regs.h"
 
-void parlcd_write_cmd(unsigned char *parlcd_mem_base, uint16_t cmd)
-{
-  *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CMD_o) = cmd;
+void parlcd_write_cmd(unsigned char *parlcd_mem_base, uint16_t cmd) {
+    *(volatile uint16_t *) (parlcd_mem_base + PARLCD_REG_CMD_o) = cmd;
 }
 
-void parlcd_write_data(unsigned char *parlcd_mem_base, uint16_t data)
-{
-  *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = data;
+void parlcd_write_data(unsigned char *parlcd_mem_base, uint16_t data) {
+    *(volatile uint16_t *) (parlcd_mem_base + PARLCD_REG_DATA_o) = data;
 }
 
-void parlcd_write_data2x(unsigned char *parlcd_mem_base, uint32_t data)
-{
-  *(volatile uint32_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = data;
+void parlcd_write_data2x(unsigned char *parlcd_mem_base, uint32_t data) {
+    *(volatile uint32_t *) (parlcd_mem_base + PARLCD_REG_DATA_o) = data;
 }
 
-void parlcd_delay(int msec)
-{
-  struct timespec wait_delay = {.tv_sec = msec / 1000,
-                                .tv_nsec = (msec % 1000) * 1000 * 1000};
-  clock_nanosleep(CLOCK_MONOTONIC, 0, &wait_delay, NULL);
+void parlcd_delay(int msec) {
+    struct timespec wait_delay = {.tv_sec = msec / 1000,
+            .tv_nsec = (msec % 1000) * 1000 * 1000};
+    clock_nanosleep(CLOCK_MONOTONIC, 0, &wait_delay, NULL);
 }
 
-void parlcd_hx8357_init(unsigned char *parlcd_mem_base)
-{
-  // toggle RST low to reset
+void parlcd_hx8357_init(unsigned char *parlcd_mem_base) {
+    // toggle RST low to reset
 /*
     digitalWrite(_rst, HIGH);
     parlcd_delay(50);
@@ -57,69 +52,69 @@ void parlcd_hx8357_init(unsigned char *parlcd_mem_base)
     parlcd_delay(30);
 
 #ifdef HX8357_B
-// Configure HX8357-B display
-    parlcd_write_cmd(parlcd_mem_base, 0x11);
-    parlcd_delay(20);
-    parlcd_write_cmd(parlcd_mem_base, 0xD0);
-    parlcd_write_data(parlcd_mem_base, 0x07);
-    parlcd_write_data(parlcd_mem_base, 0x42);
-    parlcd_write_data(parlcd_mem_base, 0x18);
+    // Configure HX8357-B display
+        parlcd_write_cmd(parlcd_mem_base, 0x11);
+        parlcd_delay(20);
+        parlcd_write_cmd(parlcd_mem_base, 0xD0);
+        parlcd_write_data(parlcd_mem_base, 0x07);
+        parlcd_write_data(parlcd_mem_base, 0x42);
+        parlcd_write_data(parlcd_mem_base, 0x18);
 
-    parlcd_write_cmd(parlcd_mem_base, 0xD1);
-    parlcd_write_data(parlcd_mem_base, 0x00);
-    parlcd_write_data(parlcd_mem_base, 0x07);
-    parlcd_write_data(parlcd_mem_base, 0x10);
+        parlcd_write_cmd(parlcd_mem_base, 0xD1);
+        parlcd_write_data(parlcd_mem_base, 0x00);
+        parlcd_write_data(parlcd_mem_base, 0x07);
+        parlcd_write_data(parlcd_mem_base, 0x10);
 
-    parlcd_write_cmd(parlcd_mem_base, 0xD2);
-    parlcd_write_data(parlcd_mem_base, 0x01);
-    parlcd_write_data(parlcd_mem_base, 0x02);
+        parlcd_write_cmd(parlcd_mem_base, 0xD2);
+        parlcd_write_data(parlcd_mem_base, 0x01);
+        parlcd_write_data(parlcd_mem_base, 0x02);
 
-    parlcd_write_cmd(parlcd_mem_base, 0xC0);
-    parlcd_write_data(parlcd_mem_base, 0x10);
-    parlcd_write_data(parlcd_mem_base, 0x3B);
-    parlcd_write_data(parlcd_mem_base, 0x00);
-    parlcd_write_data(parlcd_mem_base, 0x02);
-    parlcd_write_data(parlcd_mem_base, 0x11);
+        parlcd_write_cmd(parlcd_mem_base, 0xC0);
+        parlcd_write_data(parlcd_mem_base, 0x10);
+        parlcd_write_data(parlcd_mem_base, 0x3B);
+        parlcd_write_data(parlcd_mem_base, 0x00);
+        parlcd_write_data(parlcd_mem_base, 0x02);
+        parlcd_write_data(parlcd_mem_base, 0x11);
 
-    parlcd_write_cmd(parlcd_mem_base, 0xC5);
-    parlcd_write_data(parlcd_mem_base, 0x08);
+        parlcd_write_cmd(parlcd_mem_base, 0xC5);
+        parlcd_write_data(parlcd_mem_base, 0x08);
 
-    parlcd_write_cmd(parlcd_mem_base, 0xC8);
-    parlcd_write_data(parlcd_mem_base, 0x00);
-    parlcd_write_data(parlcd_mem_base, 0x32);
-    parlcd_write_data(parlcd_mem_base, 0x36);
-    parlcd_write_data(parlcd_mem_base, 0x45);
-    parlcd_write_data(parlcd_mem_base, 0x06);
-    parlcd_write_data(parlcd_mem_base, 0x16);
-    parlcd_write_data(parlcd_mem_base, 0x37);
-    parlcd_write_data(parlcd_mem_base, 0x75);
-    parlcd_write_data(parlcd_mem_base, 0x77);
-    parlcd_write_data(parlcd_mem_base, 0x54);
-    parlcd_write_data(parlcd_mem_base, 0x0C);
-    parlcd_write_data(parlcd_mem_base, 0x00);
+        parlcd_write_cmd(parlcd_mem_base, 0xC8);
+        parlcd_write_data(parlcd_mem_base, 0x00);
+        parlcd_write_data(parlcd_mem_base, 0x32);
+        parlcd_write_data(parlcd_mem_base, 0x36);
+        parlcd_write_data(parlcd_mem_base, 0x45);
+        parlcd_write_data(parlcd_mem_base, 0x06);
+        parlcd_write_data(parlcd_mem_base, 0x16);
+        parlcd_write_data(parlcd_mem_base, 0x37);
+        parlcd_write_data(parlcd_mem_base, 0x75);
+        parlcd_write_data(parlcd_mem_base, 0x77);
+        parlcd_write_data(parlcd_mem_base, 0x54);
+        parlcd_write_data(parlcd_mem_base, 0x0C);
+        parlcd_write_data(parlcd_mem_base, 0x00);
 
-    parlcd_write_cmd(parlcd_mem_base, 0x36);
-    parlcd_write_data(parlcd_mem_base, 0x0a);
+        parlcd_write_cmd(parlcd_mem_base, 0x36);
+        parlcd_write_data(parlcd_mem_base, 0x0a);
 
-    parlcd_write_cmd(parlcd_mem_base, 0x3A);
-    parlcd_write_data(parlcd_mem_base, 0x55);
+        parlcd_write_cmd(parlcd_mem_base, 0x3A);
+        parlcd_write_data(parlcd_mem_base, 0x55);
 
-    parlcd_write_cmd(parlcd_mem_base, 0x2A);
-    parlcd_write_data(parlcd_mem_base, 0x00);
-    parlcd_write_data(parlcd_mem_base, 0x00);
-    parlcd_write_data(parlcd_mem_base, 0x01);
-    parlcd_write_data(parlcd_mem_base, 0x3F);
+        parlcd_write_cmd(parlcd_mem_base, 0x2A);
+        parlcd_write_data(parlcd_mem_base, 0x00);
+        parlcd_write_data(parlcd_mem_base, 0x00);
+        parlcd_write_data(parlcd_mem_base, 0x01);
+        parlcd_write_data(parlcd_mem_base, 0x3F);
 
-    parlcd_write_cmd(parlcd_mem_base, 0x2B);
-    parlcd_write_data(parlcd_mem_base, 0x00);
-    parlcd_write_data(parlcd_mem_base, 0x00);
-    parlcd_write_data(parlcd_mem_base, 0x01);
-    parlcd_write_data(parlcd_mem_base, 0xDF);
+        parlcd_write_cmd(parlcd_mem_base, 0x2B);
+        parlcd_write_data(parlcd_mem_base, 0x00);
+        parlcd_write_data(parlcd_mem_base, 0x00);
+        parlcd_write_data(parlcd_mem_base, 0x01);
+        parlcd_write_data(parlcd_mem_base, 0xDF);
 
-    parlcd_delay(120);
-    parlcd_write_cmd(parlcd_mem_base, 0x29);
+        parlcd_delay(120);
+        parlcd_write_cmd(parlcd_mem_base, 0x29);
 
-    parlcd_delay(25);
+        parlcd_delay(25);
 
 #else
 // HX8357-C display initialisation
