@@ -1,4 +1,4 @@
-OBJ=main.c color.c sets.c
+OBJ=start.c color.c sets.c
 
 program: ${OBJ}
 	clang ${OBJ} -lm -o program.out
