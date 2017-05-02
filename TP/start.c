@@ -15,8 +15,8 @@ int main() {
     FILE *fp = fopen("pic.ppm", "wb");
     fprintf(fp, "P6\n%d\n%d\n255\n", width, height);
 
-    color **j = generate_julia(width, height, move_x, move_y, c_real, c_imag, 400);
-    //color ** j = generate_mandelbrot(width, height, move_x, move_y, 100);
+    //color **j = generate_julia(width, height, move_x, move_y, c_real, c_imag, 400);
+    color ** j = generate_mandelbrot(width, height, move_x, move_y, 50);
 
     for (int i = 0; i < width * height; i++) {
         fwrite(*(j + i), sizeof(color), 1, fp);

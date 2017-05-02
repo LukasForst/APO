@@ -36,7 +36,7 @@ generate_julia(int width, int height, double move_x, double move_y, double c_rea
 
             double t = (double) i / (double) max_iterations;
 
-            c->red = (uint8_t) (9 * (1 - t) * t * t * t * DEFAULT_DEPTH);;
+            c->red = (uint8_t) (9 * (1 - t) * t * t * t * DEFAULT_DEPTH);
             c->green = (uint8_t) (15 * (1 - t) * (1 - t) * t * t * DEFAULT_DEPTH);
             c->blue = (uint8_t) (8.5 * (1 - t) * (1 - t) * (1 - t) * t * DEFAULT_DEPTH);
 
@@ -76,7 +76,7 @@ color **generate_mandelbrot(int width, int height, double move_x, double move_y,
             color *c = (color *) calloc(1, sizeof(color));
 
             double t = (double) i / (double) max_iterations;
-            c->red = (uint8_t) (9 * (1 - t) * t * t * t * DEFAULT_DEPTH);;
+            c->red = (uint8_t) (9 * (1 - t) * t * t * t * DEFAULT_DEPTH);
             c->green = (uint8_t) (15 * (1 - t) * (1 - t) * t * t * DEFAULT_DEPTH);
             c->blue = (uint8_t) (8.5 * (1 - t) * (1 - t) * (1 - t) * t * DEFAULT_DEPTH);
 
