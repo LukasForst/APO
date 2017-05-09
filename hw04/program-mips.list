@@ -6,10 +6,13 @@ build/program-mips:     file format elf32-tradlittlemips
 
 Disassembly of section my_text:
 
+//v0 return value
+//a0..a9 parameters
+
 00404e00 <subroutine_fnc>:
-  404e00:	3c1c0005 	lui	gp,0x5
-  404e04:	279c9530 	addiu	gp,gp,-27344
-  404e08:	0399e021 	addu	gp,gp,t9
+  404e00:	3c1c0005 	lui	gp,0x5 //0x50000 = 327 680
+  404e04:	279c9530 	addiu	gp,gp,-27344 //gp -= 27344 = 300 336
+  404e08:	0399e021 	addu	gp,gp,t9 //
   404e0c:	24020020 	li	v0,32
   404e10:	10a2000b 	beq	a1,v0,404e40 <__start_my_text+0x40>
   404e14:	24020009 	li	v0,9
@@ -34,18 +37,24 @@ Disassembly of section my_text:
   404e60:	00a01021 	move	v0,a1
 
 00404e64 <toplevel_fnc>:
-  404e64:	3c1c0005 	lui	gp,0x5
-  404e68:	279c94cc 	addiu	gp,gp,-27444
-  404e6c:	0399e021 	addu	gp,gp,t9
-  404e70:	27bdffd0 	addiu	sp,sp,-48
-  404e74:	afbf0028 	sw	ra,40(sp)
-  404e78:	afb10024 	sw	s1,36(sp)
-  404e7c:	afb00020 	sw	s0,32(sp)
-  404e80:	afbc0010 	sw	gp,16(sp)
+  404e64:	3c1c0005 	lui	gp,0x5 //0x50000 -- 327 680
+  404e68:	279c94cc 	addiu	gp,gp,-27444 //gp -= 27444 -- 300236
+  404e6c:	0399e021 	addu	gp,gp,t9 // gp += t9 -- 4f548
+  404e70:	27bdffd0 	addiu	sp,sp,-48 //sp = -48  -- 800bbfd0 = 2148253648
+  404e74:	afbf0028 	sw	ra,40(sp) // ra -- bfc00088 = 3217031304
+  404e78:	afb10024 	sw	s1,36(sp) // s1 -- 0 integer
+  404e7c:	afb00020 	sw	s0,32(sp) // s0 -- 0 integer -> 4 bajty
+  404e80:	afbc0010 	sw	gp,16(sp) //
   404e84:	afa0001c 	sw	zero,28(sp)
-  404e88:	00008021 	move	s0,zero
-  404e8c:	10000013 	b	404edc <toplevel_fnc+0x78>
+  404e88:	00008021 	move	s0,zero //s0 = 0
+  404e8c: 10000013  b 404edc <toplevel_fnc+0x78> //jump to 404edc
+  // s0 = 0
+  // gp = 4f548
+  // ra = bfc00088
+  // sp = 800bbfd0
+  
   404e90:	24110001 	li	s1,1
+
   404e94:	83a50018 	lb	a1,24(sp)
   404e98:	8f99809c 	lw	t9,-32612(gp)
   404e9c:	00000000 	nop
@@ -63,8 +72,11 @@ Disassembly of section my_text:
   404ecc:	0000000c 	syscall
   404ed0:	10000003 	b	404ee0 <toplevel_fnc+0x7c>
   404ed4:	00002021 	move	a0,zero
+
   404ed8:	26100001 	addiu	s0,s0,1
+
   404edc:	00002021 	move	a0,zero
+
   404ee0:	27a50018 	addiu	a1,sp,24
   404ee4:	24060001 	li	a2,1
   404ee8:	24020fa3 	li	v0,4003
@@ -72,6 +84,7 @@ Disassembly of section my_text:
   404ef0:	10e00002 	beqz	a3,404efc <toplevel_fnc+0x98>
   404ef4:	00000000 	nop
   404ef8:	2402ffff 	li	v0,-1
+
   404efc:	1051ffe5 	beq	v0,s1,404e94 <toplevel_fnc+0x30>
   404f00:	27a4001c 	addiu	a0,sp,28
   404f04:	02001021 	move	v0,s0

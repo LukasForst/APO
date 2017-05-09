@@ -15,6 +15,7 @@ int toplevel_fnc(void)
    * The code calls function subroutine_fnc
    * and processes its return value.
    * 
-   * Then it resturn final result.
+   * Then it return final result.
    */
+  return 0;
 }

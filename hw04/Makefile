@@ -22,6 +22,8 @@ depend:
 	@touch depend
 
 clean:
-	rm -f *.o *.a program depend
+	rm -f *.o *.a *.zip program depend
+zip:
+	zip hw04.zip program-mips.list subroutine.c toplevel.c main.c program-x86.list subroutine.h Makefile README.txt syscalls.lst
 
 -include depend
