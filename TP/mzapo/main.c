@@ -6,6 +6,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdbool.h>
+#include <sys/socket.h>
 
 #include "mzapo_parlcd.h"
 #include "mzapo_phys.h"
@@ -38,9 +40,6 @@ int main(int argc, char *argv[]) {
     color **fractal;
     c_set **generated_sets = get_c_list(); //stored c in structure
 
-    //fractal = generate_julia(WIDTH, HEIGHT, move_x, move_y, c_real, c_imag, 400);
-    //fractal = generate_mandelbrot(WIDTH, HEIGHT, move_x, move_y, 200);
-
 /*
     parlcd_write_cmd(parlcd_mem_base, 0x2c);
     for (i = 0; i < WIDTH * HEIGHT; i++) {
@@ -55,39 +54,55 @@ int main(int argc, char *argv[]) {
     uint32_t rgb_knobs_value;
     unsigned int uint_val;
 
-    int depth = 500;
+    uint32_t depth = 500, last_depth = depth;
 
-    double const x_path = (double) 6 / (double) 255;
-    double const y_path = (double) 4 / (double) 255;
+    double const x_range = (double) 6 / (double) 255;
+    double const y_range = (double) 4 / (double) 255;
+    double const depth_range = (double) 1000 / (double) 255;
 
     double last_x = 0, last_y = 0;
-    uint32_t x_value = 0, y_value = 0, c_sets = 0, last_c_sets = 0;
+    uint32_t r_value = 0, g_value = 0, b_value = 0, c_sets = 0, last_c_sets = 0;
+    bool isclicked_red = false, isclicked_green = false, isclicked_blue = false;
 
     pthread_t drawing; //drawing thread
     while (1) {
         rgb_knobs_value = *(volatile uint32_t *) (mem_base + SPILED_REG_KNOBS_8BIT_o); //get uint with value
 
-        x_value = (rgb_knobs_value & 0x00FF0000) >> 16; // red button value
-        move_x = x_value * x_path - 3;
+        isclicked_red = (rgb_knobs_value & 0xFF000000) >> 24 == 4 ? true : false;
+        isclicked_green = (rgb_knobs_value & 0xFF000000) >> 24 == 2 ? true : false;
+        isclicked_blue = (rgb_knobs_value & 0xFF000000) >> 24 == 1 ? true : false;
 
-        y_value = (rgb_knobs_value & 0x0000FF00) >> 8; // green button value
-        move_y = y_value * y_path - 2;
+        r_value = (rgb_knobs_value & 0x00FF0000) >> 16; // red button value
 
-        c_sets = (rgb_knobs_value & 0x000000FF) % NUMBER_OF_STORED_C; // blue button value
+        g_value = (rgb_knobs_value & 0x0000FF00) >> 8; // green button value
+
+        b_value = (rgb_knobs_value & 0x000000FF); // blue button value
+
+        if (!isclicked_red && !isclicked_green && !isclicked_blue) {
+            move_x = x_range * r_value - 3;
+            move_y = y_range * g_value - 2;
+            c_sets = b_value % NUMBER_OF_STORED_C;
+        } else if (isclicked_red) {
+            depth = b_value * depth_range;
+        } else if (isclicked_green) {
+            //do something
+        } else if (isclicked_blue) {
+            //do something
+        }
 
         printf("x = %f, y = %f, c set = %d\n", move_x, move_y, c_sets);
 
-        if (last_x != move_x || last_y != move_y || last_c_sets != c_sets) {
+        if (last_x != move_x || last_y != move_y || last_c_sets != c_sets || last_depth != depth) {
             c_set *c = *(generated_sets + c_sets);
             c_real = c->real;
             c_imag = c->imaginary;
 
             fractal = generate_julia(WIDTH, HEIGHT, move_x, move_y, c_real, c_imag, depth);
-            //draw_set(fractal, parlcd_mem_base);
 
-            int err = pthread_create(&drawing, NULL, draw_set, fractal);
-            if (err) {
-                exit(EXIT_FAILURE);
+            pthread_join(drawing, NULL); //wait for previous thread
+            if (pthread_create(&drawing, NULL, draw_set, fractal)) {
+                printf("ERROR occurred while creating new thread!\n");
+                break;
             }
 
             last_x = move_x;
@@ -96,15 +111,28 @@ int main(int argc, char *argv[]) {
         }
 
 
-        struct timespec loop_delay = {.tv_sec = 0, .tv_nsec = 5 * 1000 * 1000};
-        clock_nanosleep(CLOCK_MONOTONIC, 0, &loop_delay, NULL);
+        //struct timespec loop_delay = {.tv_sec = 0, .tv_nsec = 5 * 1000 * 1000};
+        //clock_nanosleep(CLOCK_MONOTONIC, 0, &loop_delay, NULL);
     }
+
+    for (int i = 0; i < WIDTH * HEIGHT; i++) {
+        free(*(fractal + i));
+    }
+    free(fractal);
+
+
+    for (int i = 0; i < NUMBER_OF_STORED_C; i++) {
+        free(*(generated_sets + i));
+    }
+    free(generated_sets);
+    return 0;
 }
+
 
 void *draw_set(void *args) {
     color **fractal;
     fractal = (color **) args;
-
+    //maybe not tot freeing
     parlcd_write_cmd(parlcd_mem_base, 0x2c);
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
         color *c = *(fractal + i);
@@ -113,5 +141,6 @@ void *draw_set(void *args) {
         free(*(fractal + i));
     }
     free(fractal);
-    return NULL;
+    pthread_exit(NULL);
 }
+

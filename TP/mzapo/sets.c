@@ -13,7 +13,7 @@ generate_julia(int width, int height, double move_x, double move_y, double c_rea
 
     double new_real, new_imag, old_real, old_imag;   //real and imaginary parts of new and old z
 
-    color **result = (color **) calloc(width * height, sizeof(color **));
+    color **result = (color **) calloc(width * height, sizeof(color *));
     unsigned int result_idx = 0;
 
     for (int y = 0; y < height; y++) {
@@ -54,7 +54,7 @@ color **generate_mandelbrot(int width, int height, double move_x, double move_y,
     double pixel_imag, pixel_real;
     double new_real, new_imag, old_real, old_imag;   //real and imaginary parts of new and old z
 
-    color **result = (color **) calloc(width * height, sizeof(color **));
+    color **result = (color **) calloc(width * height, sizeof(color *));
     unsigned int result_idx = 0;
 
     for (int y = 0; y < height; y++) {
@@ -106,9 +106,9 @@ color **generate_mandelbrot(int width, int height, double move_x, double move_y,
 c_set **get_c_list() {
     uint32_t number_of_elements = NUMBER_OF_STORED_C, idx_c_list = 0;
 
-    c_set **c_list = (c_set **) calloc(number_of_elements, sizeof(c_set **));
+    c_set **c_list = (c_set **) calloc(number_of_elements, sizeof(c_set *));
     for (int i = 0; i < number_of_elements; i++) {
-        c_set *c = (c_set *) calloc(1, sizeof(c_set *));
+        c_set *c = (c_set *) calloc(1, sizeof(c_set));
         *(c_list + i) = c;
     }
 

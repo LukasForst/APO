@@ -8,6 +8,7 @@ CXXFLAGS = -g -std=gnu++11 -O1
 LDFLAGS = -lrt -pthread
 
 SOURCES = main.c mzapo_phys.c mzapo_parlcd.c
+HEADERS = color.h sets.h
 #SOURCES += font_prop14x16.c font_rom8x16.c
 SOURCES += color.c sets.c
 TARGET_EXE = program
@@ -58,7 +59,12 @@ test: $(TARGET_EXE)
 	./program
 
 clean:
-	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend
+	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend TermPaper-LukasForst.zip
+
+zip: $(TARGET_EXE)
+	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend TermPaper-LukasForst.zip
+	zip TermPaper-LukasForst.zip $(SOURCES) $(HEADERS)
+
 
 run: $(TARGET_EXE)
 	ssh $(TARGET_USER)@$(TARGET_IP) mkdir -p $(TARGET_DIR)
