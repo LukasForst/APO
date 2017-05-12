@@ -13,10 +13,10 @@ Disassembly of section my_text:
   404e00:	3c1c0005 	lui	gp,0x5 //0x50000 = 327 680
   404e04:	279c9530 	addiu	gp,gp,-27344 //gp -= 27344 = 300 336
   404e08:	0399e021 	addu	gp,gp,t9 //
-  404e0c:	24020020 	li	v0,32
-  404e10:	10a2000b 	beq	a1,v0,404e40 <__start_my_text+0x40>
-  404e14:	24020009 	li	v0,9
-  404e18:	10a20009 	beq	a1,v0,404e40 <__start_my_text+0x40>
+  404e0c:	24020020 	li	v0,32 // v0 = 32
+  404e10:	10a2000b 	beq	a1,v0,404e40 <__start_my_text+0x40> // if(a1 == v0) jump to 404e40
+  404e14:	24020009 	li	v0,9 //else v0 = 9
+  404e18:	10a20009 	beq	a1,v0,404e40 <__start_my_text+0x40> // if(a1 == v0) jump to 404e40
   404e1c:	00000000 	nop
   404e20:	8f8280b0 	lw	v0,-32592(gp)
   404e24:	00000000 	nop

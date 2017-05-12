@@ -102,3 +102,57 @@ color **generate_mandelbrot(int width, int height, double move_x, double move_y,
     }
     return result;
 }
+
+c_set **get_c_list() {
+    uint32_t number_of_elements = NUMBER_OF_STORED_C, idx_c_list = 0;
+
+    c_set **c_list = (c_set **) calloc(number_of_elements, sizeof(c_set **));
+    for (int i = 0; i < number_of_elements; i++) {
+        c_set *c = (c_set *) calloc(1, sizeof(c_set *));
+        *(c_list + i) = c;
+    }
+
+    (*(c_list + idx_c_list))->real = -0.4;
+    (*(c_list + idx_c_list++))->imaginary = 0.6;
+
+    (*(c_list + idx_c_list))->real = 0.285;
+    (*(c_list + idx_c_list++))->imaginary = 0;
+
+    (*(c_list + idx_c_list))->real = 0.285;
+    (*(c_list + idx_c_list++))->imaginary = 0.01;
+
+    (*(c_list + idx_c_list))->real = 0.45;
+    (*(c_list + idx_c_list++))->imaginary = 0.1428;
+
+    (*(c_list + idx_c_list))->real = -0.70176;
+    (*(c_list + idx_c_list++))->imaginary = -0.3842;
+
+    (*(c_list + idx_c_list))->real = -0.835;
+    (*(c_list + idx_c_list++))->imaginary = 0.2321;
+
+    (*(c_list + idx_c_list))->real = -0.8;
+    (*(c_list + idx_c_list++))->imaginary = 0.156;
+
+    (*(c_list + idx_c_list))->real = -0.7269;
+    (*(c_list + idx_c_list++))->imaginary = 0.1889;
+
+    (*(c_list + idx_c_list))->real = 0;
+    (*(c_list + idx_c_list++))->imaginary = -0.8;
+
+    (*(c_list + idx_c_list))->real = 1 - 1.618033988;
+    (*(c_list + idx_c_list++))->imaginary = 0;
+
+    (*(c_list + idx_c_list))->real = -1.037;
+    (*(c_list + idx_c_list++))->imaginary = 0.17;
+
+    (*(c_list + idx_c_list))->real = -0.52;
+    (*(c_list + idx_c_list++))->imaginary = 0.57;
+
+    (*(c_list + idx_c_list))->real = -0.624;
+    (*(c_list + idx_c_list++))->imaginary = 0.435;
+
+    (*(c_list + idx_c_list))->real = -0.7;
+    (*(c_list + idx_c_list++))->imaginary = 0.27015;
+
+    return c_list;
+}

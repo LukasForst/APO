@@ -2,9 +2,10 @@ CC = arm-linux-gnueabihf-gcc
 CXX = arm-linux-gnueabihf-g++
 
 CPPFLAGS = -I .
-CFLAGS =-g -std=gnu99 -O1
+CFLAGS =-g -std=gnu99 -O1 -lpthread
 CXXFLAGS = -g -std=gnu++11 -O1
-LDFLAGS = -lrt -lpthread
+#LDFLAGS = -lrt -lpthread
+LDFLAGS = -lrt -pthread
 
 SOURCES = main.c mzapo_phys.c mzapo_parlcd.c
 #SOURCES += font_prop14x16.c font_rom8x16.c
@@ -52,6 +53,9 @@ ifneq ($(filter %.cpp,$(SOURCES)),)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -w -E -M $(filter %.cpp,$(SOURCES)) \
 	  >> depend
 endif
+
+test: $(TARGET_EXE)
+	./program
 
 clean:
 	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend
