@@ -8,9 +8,9 @@ CXXFLAGS = -g -std=gnu++11 -O1
 LDFLAGS = -lrt -pthread
 
 SOURCES = main.c mzapo_phys.c mzapo_parlcd.c
-HEADERS = color.h sets.h
+HEADERS = color.h sets.h main.h udp_server.h
 #SOURCES += font_prop14x16.c font_rom8x16.c
-SOURCES += color.c sets.c
+SOURCES += color.c sets.c udp_server.c
 TARGET_EXE = program
 TARGET_IP ?= 192.168.202.168
 TARGET_DIR ?= /tmp/$(shell whoami)

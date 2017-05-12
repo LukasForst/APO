@@ -15,15 +15,11 @@
 
 #include "sets.h"
 #include "color.h"
-
-#define WIDTH 480
-#define HEIGHT 320
-
-unsigned char *parlcd_mem_base;
-
-void *draw_set(void *args);
+#include "udp_server.h"
+#include "main.h"
 
 int main(int argc, char *argv[]) {
+    uint32_t rgb_knobs_value;
     unsigned char *mem_base;
     int i, j;
 
@@ -38,21 +34,8 @@ int main(int argc, char *argv[]) {
 
     double c_real = -0.7, c_imag = 0.27015, move_x = 0.0, move_y = 0.0; //-3,3 is max for x, -2,2 is max for y
     color **fractal;
+
     c_set **generated_sets = get_c_list(); //stored c in structure
-
-/*
-    parlcd_write_cmd(parlcd_mem_base, 0x2c);
-    for (i = 0; i < WIDTH * HEIGHT; i++) {
-        color *c = *(fractal + i);
-        uint16_t final_color = convert_struct(c);
-        parlcd_write_data(parlcd_mem_base, final_color);
-        free(*(fractal +i));
-    }
-    free(fractal);
-*/
-
-    uint32_t rgb_knobs_value;
-    unsigned int uint_val;
 
     uint32_t depth = 500, last_depth = depth;
 
@@ -65,6 +48,8 @@ int main(int argc, char *argv[]) {
     bool isclicked_red = false, isclicked_green = false, isclicked_blue = false;
 
     pthread_t drawing; //drawing thread
+    pthread_t udp;
+    pthread_create(&udp, NULL, udp_listener, NULL); //let's start listening for the udp
     while (1) {
         rgb_knobs_value = *(volatile uint32_t *) (mem_base + SPILED_REG_KNOBS_8BIT_o); //get uint with value
 
@@ -99,7 +84,6 @@ int main(int argc, char *argv[]) {
 
             fractal = generate_julia(WIDTH, HEIGHT, move_x, move_y, c_real, c_imag, depth);
 
-            pthread_join(drawing, NULL); //wait for previous thread
             if (pthread_create(&drawing, NULL, draw_set, fractal)) {
                 printf("ERROR occurred while creating new thread!\n");
                 break;
@@ -108,11 +92,9 @@ int main(int argc, char *argv[]) {
             last_x = move_x;
             last_y = move_y;
             last_c_sets = c_sets;
+
+            pthread_join(drawing, NULL); //wait for previous thread
         }
-
-
-        //struct timespec loop_delay = {.tv_sec = 0, .tv_nsec = 5 * 1000 * 1000};
-        //clock_nanosleep(CLOCK_MONOTONIC, 0, &loop_delay, NULL);
     }
 
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
@@ -125,6 +107,8 @@ int main(int argc, char *argv[]) {
         free(*(generated_sets + i));
     }
     free(generated_sets);
+
+    pthread_cancel(udp);
     return 0;
 }
 
@@ -132,7 +116,6 @@ int main(int argc, char *argv[]) {
 void *draw_set(void *args) {
     color **fractal;
     fractal = (color **) args;
-    //maybe not tot freeing
     parlcd_write_cmd(parlcd_mem_base, 0x2c);
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
         color *c = *(fractal + i);
