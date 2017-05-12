@@ -58,9 +58,7 @@ int main(int argc, char *argv[]) {
         isclicked_blue = (rgb_knobs_value & 0xFF000000) >> 24 == 1 ? true : false;
 
         r_value = (rgb_knobs_value & 0x00FF0000) >> 16; // red button value
-
         g_value = (rgb_knobs_value & 0x0000FF00) >> 8; // green button value
-
         b_value = (rgb_knobs_value & 0x000000FF); // blue button value
 
         if (!isclicked_red && !isclicked_green && !isclicked_blue) {
@@ -75,9 +73,9 @@ int main(int argc, char *argv[]) {
             //do something
         }
 
-        printf("x = %f, y = %f, c set = %d\n", move_x, move_y, c_sets);
-
         if (last_x != move_x || last_y != move_y || last_c_sets != c_sets || last_depth != depth) {
+            printf("x = %f, y = %f, c set = %d, depth = %d\n", move_x, move_y, c_sets, depth);
+
             c_set *c = *(generated_sets + c_sets);
             c_real = c->real;
             c_imag = c->imaginary;
