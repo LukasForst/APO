@@ -1,3 +1,7 @@
+/**
+ * @author Lukas Forst
+ * */
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -5,7 +9,7 @@
 #include "color.h"
 #include "sets.h"
 
-#define DEFAULT_ITERATIONS 100
+#define DEFAULT_ITERATIONS 400
 
 color **
 generate_julia(int width, int height, double move_x, double move_y, double c_real, double c_imag, int max_iterations) {
@@ -13,7 +17,7 @@ generate_julia(int width, int height, double move_x, double move_y, double c_rea
 
     double new_real, new_imag, old_real, old_imag;   //real and imaginary parts of new and old z
 
-    color **result = (color **) calloc(width * height, sizeof(color *));
+    color **result = (color **) calloc(width * height, sizeof(color *)); // memory for the result
     unsigned int result_idx = 0;
 
     for (int y = 0; y < height; y++) {
@@ -29,13 +33,13 @@ generate_julia(int width, int height, double move_x, double move_y, double c_rea
                 new_real = old_real * old_real - old_imag * old_imag + c_real;
                 new_imag = 2 * old_real * old_imag + c_imag;
 
+                // break when number doesn't belongs to the set
                 if (fabs(new_real * new_real + new_imag * new_imag) > 2) break;
-
             }
             color *c = (color *) calloc(1, sizeof(color));
 
+            // let's give it some color
             double t = (double) i / (double) max_iterations;
-
             c->red = (uint8_t) (9 * (1 - t) * t * t * t * DEFAULT_DEPTH);
             c->green = (uint8_t) (15 * (1 - t) * (1 - t) * t * t * DEFAULT_DEPTH);
             c->blue = (uint8_t) (8.5 * (1 - t) * (1 - t) * (1 - t) * t * DEFAULT_DEPTH);
@@ -75,6 +79,7 @@ color **generate_mandelbrot(int width, int height, double move_x, double move_y,
             }
             color *c = (color *) calloc(1, sizeof(color));
 
+            // let's give it some color
             double t = (double) i / (double) max_iterations;
             c->red = (uint8_t) (9 * (1 - t) * t * t * t * DEFAULT_DEPTH);
             c->green = (uint8_t) (15 * (1 - t) * (1 - t) * t * t * DEFAULT_DEPTH);

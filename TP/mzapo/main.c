@@ -1,3 +1,7 @@
+/**
+ * @author Lukas Forst
+ * */
+
 #define _POSIX_C_SOURCE 200112L
 
 #include <stdlib.h>
@@ -23,22 +27,25 @@ int main(int argc, char *argv[]) {
     unsigned char *mem_base;
     int i, j;
 
+    //display and buttons init
     parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0); //display
     mem_base = map_phys_address(SPILED_REG_BASE_PHYS, SPILED_REG_SIZE, 0); // buttons
-
     if (parlcd_mem_base == NULL || mem_base == NULL) {
         printf("Memory error!\n");
         exit(1);
     }
     parlcd_hx8357_init(parlcd_mem_base);
 
+    //first settings of the Julia set
     double c_real = -0.7, c_imag = 0.27015, move_x = 0.0, move_y = 0.0; //-3,3 is max for x, -2,2 is max for y
+    uint32_t depth = 500, last_depth = depth;
+
+    //final memory for the image
     color **fractal;
 
     c_set **generated_sets = get_c_list(); //stored c in structure
 
-    uint32_t depth = 500, last_depth = depth;
-
+    //image edges
     double const x_range = (double) 6 / (double) 255;
     double const y_range = (double) 4 / (double) 255;
     double const depth_range = (double) 1000 / (double) 255;
@@ -48,7 +55,7 @@ int main(int argc, char *argv[]) {
     bool isclicked_red = false, isclicked_green = false, isclicked_blue = false;
 
     pthread_t drawing; //drawing thread
-    pthread_t udp;
+    pthread_t udp; //udp listener thread
     pthread_create(&udp, NULL, udp_listener, NULL); //let's start listening for the udp
     while (1) {
         rgb_knobs_value = *(volatile uint32_t *) (mem_base + SPILED_REG_KNOBS_8BIT_o); //get uint with value
@@ -83,7 +90,7 @@ int main(int argc, char *argv[]) {
             fractal = generate_julia(WIDTH, HEIGHT, move_x, move_y, c_real, c_imag, depth);
 
             if (pthread_create(&drawing, NULL, draw_set, fractal)) {
-                printf("ERROR occurred while creating new thread!\n");
+                printf("ERROR occurred while creating new thread!\nexiting...\n");
                 break;
             }
 
