@@ -115,7 +115,14 @@ void *udp_listener(void *args) {
     double c_real = (*(generated_sets + c))->real;
     double c_imag = (*(generated_sets + c))->imaginary;
 
-    color **fractal = generate_julia(WIDTH, HEIGHT, x, y, c_real, c_imag, 500);
+    color **fractal = generate_julia(WIDTH, HEIGHT, x, y, c_real, c_imag, DEFAULT_DEPTH);
+
+    parameters.c_real = c_real;
+    parameters.c_imaginary = c_imag;
+    parameters.depth = DEFAULT_DEPTH;
+    parameters.set_number = c;
+    parameters.x = x;
+    parameters.y = y;
 
     pthread_t drawing_sets;
     pthread_create(&drawing_sets, NULL, draw_set, fractal);
