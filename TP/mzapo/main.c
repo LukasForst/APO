@@ -12,15 +12,20 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <sys/socket.h>
+#include <string.h>
 
 #include "mzapo_parlcd.h"
 #include "mzapo_phys.h"
 #include "mzapo_regs.h"
+#include "font_types.h"
 
 #include "sets.h"
 #include "color.h"
 #include "udp_server.h"
 #include "main.h"
+
+
+
 
 int main(int argc, char *argv[]) {
     uint32_t rgb_knobs_value;
@@ -48,16 +53,17 @@ int main(int argc, char *argv[]) {
     //image edges
     double const x_range = (double) 6 / (double) 255;
     double const y_range = (double) 4 / (double) 255;
-    double const depth_range = (double) 1000 / (double) 255;
+    double const depth_range = (double) 600 / (double) 255;
 
     double last_x = 0, last_y = 0;
     uint32_t r_value = 0, g_value = 0, b_value = 0, c_sets = 0, last_c_sets = 0;
-    bool isclicked_red = false, isclicked_green = false, isclicked_blue = false;
+    bool isclicked_red = false, isclicked_green = false, isclicked_blue = false, was_clicked = false;
 
     pthread_t drawing; //drawing thread
     pthread_t udp; //udp listener thread
     pthread_create(&udp, NULL, udp_listener, NULL); //let's start listening for the udp
     while (1) {
+        //TODO slow it down a little bit, reaction time of the people is slower 0.2 sec
         rgb_knobs_value = *(volatile uint32_t *) (mem_base + SPILED_REG_KNOBS_8BIT_o); //get uint with value
 
         isclicked_red = (rgb_knobs_value & 0xFF000000) >> 24 == 4 ? true : false;
@@ -71,9 +77,11 @@ int main(int argc, char *argv[]) {
         if (!isclicked_red && !isclicked_green && !isclicked_blue) {
             move_x = x_range * r_value - 3;
             move_y = y_range * g_value - 2;
-            c_sets = b_value % NUMBER_OF_STORED_C;
+            c_sets = was_clicked ? last_c_sets : b_value / 4 % NUMBER_OF_STORED_C;
+            was_clicked = false;
         } else if (isclicked_red) {
             depth = b_value * depth_range;
+            was_clicked = true;
         } else if (isclicked_green) {
             //do something
         } else if (isclicked_blue) {
@@ -89,6 +97,13 @@ int main(int argc, char *argv[]) {
 
             fractal = generate_julia(WIDTH, HEIGHT, move_x, move_y, c_real, c_imag, depth);
 
+            parameters.c_real = c_real;
+            parameters.c_imaginary = c_imag;
+            parameters.depth = depth;
+            parameters.set_number = c_sets;
+            parameters.x = move_x;
+            parameters.y = move_y;
+
             if (pthread_create(&drawing, NULL, draw_set, fractal)) {
                 printf("ERROR occurred while creating new thread!\nexiting...\n");
                 break;
@@ -96,9 +111,8 @@ int main(int argc, char *argv[]) {
 
             last_x = move_x;
             last_y = move_y;
+            last_depth = depth;
             last_c_sets = c_sets;
-
-            pthread_join(drawing, NULL); //wait for previous thread
         }
     }
 
@@ -121,14 +135,70 @@ int main(int argc, char *argv[]) {
 void *draw_set(void *args) {
     color **fractal;
     fractal = (color **) args;
-    parlcd_write_cmd(parlcd_mem_base, 0x2c);
+
+    uint16_t *final_data = (uint16_t *) calloc(WIDTH * HEIGHT, sizeof(uint16_t));
+
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
         color *c = *(fractal + i);
-        uint16_t final_color = convert_struct(c);
-        parlcd_write_data(parlcd_mem_base, final_color);
+        *(final_data + i) = convert_struct(c);
         free(*(fractal + i));
     }
     free(fractal);
+
+    char *row_1 = "sum: %.2f + %.2fi";
+    char *row_2 = "depth: %d";
+    char *row_3 = "set #: %d";
+    char *row_4 = "x = %.2f, y = %.2f";
+    char final_text[WIDTH];
+
+    sprintf(final_text, row_1, parameters.c_real, parameters.c_imaginary);
+    final_data = write_string(strlen(final_text), final_text, final_data, 1);
+
+    sprintf(final_text, row_2, parameters.depth);
+    final_data = write_string(strlen(final_text), final_text, final_data, 2);
+
+    sprintf(final_text, row_3, parameters.set_number);
+    final_data = write_string(strlen(final_text), final_text, final_data, 3);
+
+    sprintf(final_text, row_4, parameters.x, parameters.y);
+    final_data = write_string(strlen(final_text), final_text, final_data, 4);
+
+    parlcd_write_cmd(parlcd_mem_base, 0x2c);
+    for (int i = 0; i < WIDTH * HEIGHT; i++) {
+        parlcd_write_data(parlcd_mem_base, *(final_data + i));
+    }
+
+    free(final_data);
     pthread_exit(NULL);
 }
+
+uint16_t *write_string(size_t size_of_string, char *string, uint16_t *data, int row) {
+    for (int i = 0; i < size_of_string; i++) {
+        data = put_char_there(data, *(string + i), row, i);
+    }
+    return data;
+}
+
+uint16_t *put_char_there(uint16_t *data, char c, int row, int column) {
+    for (int i = 0; i < 16; i++) {
+        *(data + WIDTH * (i + row * 16) + column * 8 + 0) =
+                font_rom8x16.bits[(int) c * 16 + i] >> 15 & 1 ? WHITE : BLACK;
+        *(data + WIDTH * (i + row * 16) + column * 8 + 1) =
+                font_rom8x16.bits[(int) c * 16 + i] >> 14 & 1 ? WHITE : BLACK;
+        *(data + WIDTH * (i + row * 16) + column * 8 + 2) =
+                font_rom8x16.bits[(int) c * 16 + i] >> 13 & 1 ? WHITE : BLACK;
+        *(data + WIDTH * (i + row * 16) + column * 8 + 3) =
+                font_rom8x16.bits[(int) c * 16 + i] >> 12 & 1 ? WHITE : BLACK;
+        *(data + WIDTH * (i + row * 16) + column * 8 + 4) =
+                font_rom8x16.bits[(int) c * 16 + i] >> 11 & 1 ? WHITE : BLACK;
+        *(data + WIDTH * (i + row * 16) + column * 8 + 5) =
+                font_rom8x16.bits[(int) c * 16 + i] >> 10 & 1 ? WHITE : BLACK;
+        *(data + WIDTH * (i + row * 16) + column * 8 + 6) =
+                font_rom8x16.bits[(int) c * 16 + i] >> 9 & 1 ? WHITE : BLACK;
+        *(data + WIDTH * (i + row * 16) + column * 8 + 7) =
+                font_rom8x16.bits[(int) c * 16 + i] >> 8 & 1 ? WHITE : BLACK;
+    }
+    return data;
+}
+
 
