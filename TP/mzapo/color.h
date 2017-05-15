@@ -15,6 +15,8 @@
 static const uint16_t RED = 0b1111100000000000;
 static const uint16_t GREEN = 0b0000011111100000;
 static const uint16_t BLUE = 0b0000000000011111;
+static const uint16_t BLACK = 0b0000000000000000;
+static const uint16_t WHITE = 0b1111111111111111;
 
 /**
  * Structure holding generated color, RGB represented by uint8_t

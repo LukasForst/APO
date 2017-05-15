@@ -15,4 +15,11 @@ unsigned char *parlcd_mem_base;
  * */
 void *draw_set(void *args);
 
+/**
+ * Put char in the field with data.
+ * */
+uint16_t *put_char_there(uint16_t *data, char c, int row, int column);
+
+uint16_t *write_string(size_t size_of_string, char *string, uint16_t *data, int row);
+
 #endif //TP_MAIN_H
