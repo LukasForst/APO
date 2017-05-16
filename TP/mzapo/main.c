@@ -4,6 +4,8 @@
 
 #define _POSIX_C_SOURCE 200112L
 
+#include "main.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -22,9 +24,7 @@
 #include "sets.h"
 #include "color.h"
 #include "udp_server.h"
-#include "main.h"
-
-
+#include "display_writting.h"
 
 
 int main(int argc, char *argv[]) {
@@ -97,6 +97,7 @@ int main(int argc, char *argv[]) {
 
             fractal = generate_julia(WIDTH, HEIGHT, move_x, move_y, c_real, c_imag, depth);
 
+            //set parameters of the image
             parameters.c_real = c_real;
             parameters.c_imaginary = c_imag;
             parameters.depth = depth;
@@ -145,23 +146,16 @@ void *draw_set(void *args) {
     }
     free(fractal);
 
-    char *row_1 = "sum: %.2f + %.2fi";
-    char *row_2 = "depth: %d";
-    char *row_3 = "set #: %d";
-    char *row_4 = "x = %.2f, y = %.2f";
-    char final_text[WIDTH];
+    char *text_template = "sum: %.2f + %.2fi\ndepth: %d\nset #: %d\nx = %.2f, y = %.2f";
+    char final_text[WIDTH * HEIGHT];
 
-    sprintf(final_text, row_1, parameters.c_real, parameters.c_imaginary);
-    final_data = write_string(strlen(final_text), final_text, final_data, 1);
-
-    sprintf(final_text, row_2, parameters.depth);
-    final_data = write_string(strlen(final_text), final_text, final_data, 2);
-
-    sprintf(final_text, row_3, parameters.set_number);
-    final_data = write_string(strlen(final_text), final_text, final_data, 3);
-
-    sprintf(final_text, row_4, parameters.x, parameters.y);
-    final_data = write_string(strlen(final_text), final_text, final_data, 4);
+    sprintf(final_text, text_template,
+            parameters.c_real, parameters.c_imaginary,
+            parameters.depth,
+            parameters.set_number,
+            parameters.x, parameters.y
+    );
+    final_data = write_string(final_text, final_data);
 
     parlcd_write_cmd(parlcd_mem_base, 0x2c);
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
@@ -171,34 +165,4 @@ void *draw_set(void *args) {
     free(final_data);
     pthread_exit(NULL);
 }
-
-uint16_t *write_string(size_t size_of_string, char *string, uint16_t *data, int row) {
-    for (int i = 0; i < size_of_string; i++) {
-        data = put_char_there(data, *(string + i), row, i);
-    }
-    return data;
-}
-
-uint16_t *put_char_there(uint16_t *data, char c, int row, int column) {
-    for (int i = 0; i < 16; i++) {
-        *(data + WIDTH * (i + row * 16) + column * 8 + 0) =
-                font_rom8x16.bits[(int) c * 16 + i] >> 15 & 1 ? WHITE : BLACK;
-        *(data + WIDTH * (i + row * 16) + column * 8 + 1) =
-                font_rom8x16.bits[(int) c * 16 + i] >> 14 & 1 ? WHITE : BLACK;
-        *(data + WIDTH * (i + row * 16) + column * 8 + 2) =
-                font_rom8x16.bits[(int) c * 16 + i] >> 13 & 1 ? WHITE : BLACK;
-        *(data + WIDTH * (i + row * 16) + column * 8 + 3) =
-                font_rom8x16.bits[(int) c * 16 + i] >> 12 & 1 ? WHITE : BLACK;
-        *(data + WIDTH * (i + row * 16) + column * 8 + 4) =
-                font_rom8x16.bits[(int) c * 16 + i] >> 11 & 1 ? WHITE : BLACK;
-        *(data + WIDTH * (i + row * 16) + column * 8 + 5) =
-                font_rom8x16.bits[(int) c * 16 + i] >> 10 & 1 ? WHITE : BLACK;
-        *(data + WIDTH * (i + row * 16) + column * 8 + 6) =
-                font_rom8x16.bits[(int) c * 16 + i] >> 9 & 1 ? WHITE : BLACK;
-        *(data + WIDTH * (i + row * 16) + column * 8 + 7) =
-                font_rom8x16.bits[(int) c * 16 + i] >> 8 & 1 ? WHITE : BLACK;
-    }
-    return data;
-}
-
 
