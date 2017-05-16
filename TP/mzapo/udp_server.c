@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 #include "udp_server.h"
 #include "sets.h"
@@ -114,14 +115,15 @@ void *udp_listener(void *args) {
         }
     }
     free(tmp_number);
-    printf("udp parameters - %f %f %d\n", x, y, c);
+    printf("udp parameters - x: %f, y: %f, set: %d, depth: %d\n", x, y, c, depth);
 
     c_set **generated_sets = get_c_list(); //stored c in structure
     double c_real = (*(generated_sets + c))->real;
     double c_imag = (*(generated_sets + c))->imaginary;
 
     color **fractal = generate_julia(WIDTH, HEIGHT, x, y, c_real, c_imag, depth);
-    stop_show_window = 1;
+
+    stop_show_window = true;    //stop show-window if it's running
 
     parameters.c_real = c_real;
     parameters.c_imaginary = c_imag;
@@ -139,4 +141,3 @@ void *udp_listener(void *args) {
     free(generated_sets);
     return udp_listener(NULL); //call it again
 }
-

@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     parlcd_hx8357_init(parlcd_mem_base);
 
     //first settings of the Julia set
-    double c_real = -0.7, c_imag = 0.27015, move_x = 0.0, move_y = 0.0; //-3,3 is max for x, -2,2 is max for y
+    double move_x = 0.0, move_y = 0.0; //-3,3 is max for x, -2,2 is max for y
     uint32_t depth = 500, last_depth = depth;
 
     //final memory for the image
@@ -93,14 +93,12 @@ int main(int argc, char *argv[]) {
             printf("x = %f, y = %f, c set = %d, depth = %d\n", move_x, move_y, c_sets, depth);
 
             c_set *c = *(generated_sets + c_sets);
-            c_real = c->real;
-            c_imag = c->imaginary;
 
-            fractal = generate_julia(WIDTH, HEIGHT, move_x, move_y, c_real, c_imag, depth);
+            fractal = generate_julia(WIDTH, HEIGHT, move_x, move_y, c->real, c->imaginary, depth);
 
             //set parameters of the image
-            parameters.c_real = c_real;
-            parameters.c_imaginary = c_imag;
+            parameters.c_real = c->real;
+            parameters.c_imaginary = c->imaginary;
             parameters.depth = depth;
             parameters.set_number = c_sets;
             parameters.x = move_x;
