@@ -19,22 +19,8 @@ static const uint16_t BLACK = 0b0000000000000000;
 static const uint16_t WHITE = 0b1111111111111111;
 
 /**
- * Structure holding generated color, RGB represented by uint8_t
- * */
-typedef struct {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-} color;
-
-/**
  * Convert given numbers to the one uint16_t color (RGB565)
  * */
 uint16_t convert(uint8_t red, uint8_t green, uint8_t blue);
-
-/**
- * Convert whole structure color to the uint16_t color (RGB565)
- * */
-uint16_t convert_struct(color *c);
 
 #endif //APO_COLOR_H

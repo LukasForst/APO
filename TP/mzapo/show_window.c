@@ -37,13 +37,15 @@ void show_window() {
     }
 
     c_set **generated_sets = get_c_list();
+    uint16_t *fractal;
+    c_set *c;
 
     while (true) {
         for (i = 0; i < NUMBER_OF_STORED_C; i++) {
             for (j = 1; j < 400; j += iter) {
-                c_set *c = *(generated_sets + i);
+                c = *(generated_sets + i);
 
-                color **fractal = generate_julia(WIDTH, HEIGHT, 0, 0, c->real, c->imaginary, j);
+                fractal = generate_julia(WIDTH, HEIGHT, 0, 0, c->real, c->imaginary, j);
                 printf("x = %f, y = %f, c set = %d, depth = %d\n", 0.0, 0.0, i, j);
 
                 //set parameters of the image

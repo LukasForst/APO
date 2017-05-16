@@ -121,7 +121,7 @@ void *udp_listener(void *args) {
     double c_real = (*(generated_sets + c))->real;
     double c_imag = (*(generated_sets + c))->imaginary;
 
-    color **fractal = generate_julia(WIDTH, HEIGHT, x, y, c_real, c_imag, depth);
+    uint16_t *fractal = generate_julia(WIDTH, HEIGHT, x, y, c_real, c_imag, depth);
 
     stop_show_window = true;    //stop show-window if it's running
 

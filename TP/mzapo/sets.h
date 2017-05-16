@@ -20,13 +20,13 @@ typedef struct {
 /**
  * Generate julia set according to the given parameters.
  * */
-color **
+uint16_t *
 generate_julia(int width, int height, double move_x, double move_y, double c_real, double c_imag, int max_iterations);
 
 /**
  * Generate mandelbrot according to the given parameters.
  * */
-color **generate_mandelbrot(int width, int height, double move_x, double move_y, int max_iterations);
+uint16_t *generate_mandelbrot(int width, int height, double move_x, double move_y, int max_iterations);
 
 /**
  * Get list of predefined real and imaginary parts of the c.

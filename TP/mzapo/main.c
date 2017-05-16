@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     uint32_t depth = 500, last_depth = depth;
 
     //final memory for the image
-    color **fractal;
+    uint16_t *fractal;
 
     c_set **generated_sets = get_c_list(); //stored c in structure
 
@@ -104,12 +104,14 @@ int main(int argc, char *argv[]) {
             parameters.x = move_x;
             parameters.y = move_y;
 
+            //create new thread for displaying data
             int err = pthread_create(&drawing, NULL, draw_set, fractal);
             if (err != 0) {
                 printf("ERROR occurred while creating new thread!\nReason: %s\nexiting...\n", strerror(err));
                 break;
             }
 
+            //save data state
             last_x = move_x;
             last_y = move_y;
             last_depth = depth;
@@ -118,11 +120,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    for (int i = 0; i < WIDTH * HEIGHT; i++) {
-        free(*(fractal + i));
-    }
+    //cleanup
     free(fractal);
-
 
     for (int i = 0; i < NUMBER_OF_STORED_C; i++) {
         free(*(generated_sets + i));
@@ -135,17 +134,7 @@ int main(int argc, char *argv[]) {
 
 
 void *draw_set(void *args) {
-    color **fractal;
-    fractal = (color **) args;
-
-    uint16_t *final_data = (uint16_t *) calloc(WIDTH * HEIGHT, sizeof(uint16_t));
-
-    for (int i = 0; i < WIDTH * HEIGHT; i++) {
-        color *c = *(fractal + i);
-        *(final_data + i) = convert_struct(c);
-        free(*(fractal + i));
-    }
-    free(fractal);
+    uint16_t *fractal = (uint16_t *) args;
 
     char *text_template = "sum: %.2f + %.2fi\ndepth: %d\nset #: %d\nx = %.2f, y = %.2f";
     char final_text[WIDTH * HEIGHT];
@@ -156,14 +145,14 @@ void *draw_set(void *args) {
             parameters.set_number,
             parameters.x, parameters.y
     );
-    final_data = write_string(final_text, final_data);
+    fractal = write_string(final_text, fractal);
 
     parlcd_write_cmd(parlcd_mem_base, 0x2c);
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
-        parlcd_write_data(parlcd_mem_base, *(final_data + i));
+        parlcd_write_data(parlcd_mem_base, *(fractal + i));
     }
 
-    free(final_data);
+    free(fractal);
     return NULL;
 }
 
