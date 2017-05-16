@@ -20,6 +20,7 @@ generate_julia(int width, int height, double move_x, double move_y, double c_rea
     uint16_t *result = (uint16_t *) calloc(width * height, sizeof(uint16_t)); // memory for the result
     unsigned int result_idx = 0;
 
+    //some constants that are computed before whole loop
     const double real_part_const = 3.0 / width;
     const double real_part_add = 3.0 / 2.0;
     const double imag_part_const = 2.0 / height;
@@ -29,7 +30,7 @@ generate_julia(int width, int height, double move_x, double move_y, double c_rea
             new_real = real_part_const * x - real_part_add + move_x;
             new_imag = imag_part_const * y - 1 + move_y;
 
-            int i; // number of iterations
+            int i;
             for (i = 0; i < max_iterations; i++) {
                 old_real = new_real;
                 old_imag = new_imag;

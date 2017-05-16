@@ -30,13 +30,13 @@ void show_window() {
     bool break_flag = false;
 
     pthread_t buttons_check, drawing;
-    int err = pthread_create(&buttons_check, NULL, check_end, NULL);
+    int err = pthread_create(&buttons_check, NULL, check_end, NULL); //start thread which will be checking buttons
     if (err != 0) {
         printf("ERROR occurred while creating new thread!\nReason: %s\nexiting...\n", strerror(err));
         return;
     }
 
-    c_set **generated_sets = get_c_list();
+    c_set **generated_sets = get_c_list(); //generate parameters for the julia sets
     uint16_t *fractal;
     c_set *c;
 

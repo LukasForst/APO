@@ -23,6 +23,9 @@
 #include "show_window.h"
 
 void *udp_listener(void *args) {
+    /*----------------------------------------------------------------------------------------------------------------*/
+    /*beej.us part START*/
+
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
     int rv;
@@ -77,15 +80,18 @@ void *udp_listener(void *args) {
     printf("listener: packet contains \"%s\"\n", buf);
     close(sockfd);
 
+    /*beej.us part END*/
+    /*----------------------------------------------------------------------------------------------------------------*/
+
     //Parse parameters from upd <x> <y> <c_set> <depth>
     char *tmp_number = (char *) calloc(numbytes, sizeof(char));
     int tmp_number_idx = 0, number_of_spaces = 0;
     double x = 0, y = 0;
     uint32_t c = 0, depth = 0;
 
-    for (int i = 0; i <= numbytes; i++) {
-        int flag = 0;
+    bool break_flag = false;
 
+    for (int i = 0; i <= numbytes; i++) {
         if (*(buf + i) != ' ' && *(buf + i) != '\0') {
             *(tmp_number + tmp_number_idx++) = *(buf + i);
         } else {
@@ -105,14 +111,12 @@ void *udp_listener(void *args) {
                 case 3:
                     depth = atoi(tmp_number);
                     tmp_number_idx = 0;
-                    flag = 1;
+                    break_flag = true;
                     break;
             }
             number_of_spaces++;
         }
-        if (flag == 1) {
-            break;
-        }
+        if (break_flag) break;
     }
     free(tmp_number);
     printf("udp parameters - x: %f, y: %f, set: %d, depth: %d\n", x, y, c, depth);
