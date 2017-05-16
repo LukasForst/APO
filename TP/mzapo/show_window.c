@@ -16,51 +16,77 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 c_set **generated_sets; //stored c in structure
 
-void draw_set_with_parameters(int set, int depth);
+bool draw_set_with_parameters(int set, int depth);
+
+bool check_end();
 
 void show_window() {
+    stop_show_window = 0;
     int i, j;
-    uint32_t rgb_knobs_value;
-    bool isclicked_blue = false, isclicked_red = false, isclicked_green = false;
-
+    bool break_flag = false;
     generated_sets = get_c_list();
     while (1) {
-        rgb_knobs_value = *(volatile uint32_t *) (mem_base + SPILED_REG_KNOBS_8BIT_o); //get uint with value
-
-        isclicked_red = (rgb_knobs_value & 0xFF000000) >> 24 == 4 ? true : false;
-        isclicked_green = (rgb_knobs_value & 0xFF000000) >> 24 == 2 ? true : false;
-        isclicked_blue = (rgb_knobs_value & 0xFF000000) >> 24 == 1 ? true : false;
-
-        if (isclicked_red || isclicked_green || isclicked_blue) {
-            sleep(1);
-            return;
-        }
-
         int iter = 2;
         for (i = 0; i < NUMBER_OF_STORED_C; i++) {
             for (j = 1; j < 400; j += iter) {
 
-                draw_set_with_parameters(i, j);
+                if (!draw_set_with_parameters(i, j)) {
+                    break_flag = true;
+                    break;
+                }
 
                 if (j < 20) {
-                    iter = 2;
+                    iter = 1;
                 } else if (j < 100) {
-                    iter = 20;
+                    iter = 10;
                 } else if (j < 400) {
-                    iter = 100;
+                    iter = 30;
                 } else {
                     iter = 150;
                 }
+
+                if (check_end()) {
+                    break_flag = true;
+                    break;
+                }
             }
-            sleep(30);
+            if (break_flag) break;
+            sleep(2);
         }
+        if (break_flag) break;
     }
+    for (int i = 0; i < NUMBER_OF_STORED_C; i++) {
+        free(*(generated_sets + i));
+    }
+    free(generated_sets);
+
 }
 
-void draw_set_with_parameters(int set, int depth) {
+bool check_end() {
+    bool isclicked_blue = false, isclicked_red = false, isclicked_green = false;
+    uint32_t rgb_knobs_value;
+
+    rgb_knobs_value = *(volatile uint32_t *) (mem_base + SPILED_REG_KNOBS_8BIT_o); //get uint with value
+
+    isclicked_red = (rgb_knobs_value & 0xFF000000) >> 24 == 4 ? true : false;
+    isclicked_green = (rgb_knobs_value & 0xFF000000) >> 24 == 2 ? true : false;
+    isclicked_blue = (rgb_knobs_value & 0xFF000000) >> 24 == 1 ? true : false;
+
+    if (isclicked_red || isclicked_green || isclicked_blue || stop_show_window) {
+        printf("Abort!\n");
+        stop_show_window = 0;
+        return true;
+    }
+    return false;
+}
+
+pthread_t drawing;
+
+bool draw_set_with_parameters(int set, int depth) {
 
     c_set *c = *(generated_sets + set);
     double c_real = c->real;
@@ -77,9 +103,11 @@ void draw_set_with_parameters(int set, int depth) {
     parameters.x = 0;
     parameters.y = 0;
 
-    pthread_t drawing;
-    if (pthread_create(&drawing, NULL, draw_set, fractal)) {
-        printf("ERROR occurred while creating new thread!\nexiting...\n");
+    int err = pthread_create(&drawing, NULL, draw_set, fractal);
+    if (err != 0) {
+        printf("ERROR occurred while creating new thread!\nReason: %s\nexiting...\n", strerror(err));
+        return false;
     }
-
+    pthread_join(drawing, NULL);
+    return true;
 }

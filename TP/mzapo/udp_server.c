@@ -19,6 +19,7 @@
 #include "sets.h"
 #include "color.h"
 #include "main.h"
+#include "show_window.h"
 
 void *udp_listener(void *args) {
     int sockfd;
@@ -75,11 +76,11 @@ void *udp_listener(void *args) {
     printf("listener: packet contains \"%s\"\n", buf);
     close(sockfd);
 
-    //Parse parameters from upd <x> <y> <c>
+    //Parse parameters from upd <x> <y> <c_set> <depth>
     char *tmp_number = (char *) calloc(numbytes, sizeof(char));
     int tmp_number_idx = 0, number_of_spaces = 0;
     double x = 0, y = 0;
-    uint32_t c = 0;
+    uint32_t c = 0, depth = 0;
 
     for (int i = 0; i <= numbytes; i++) {
         int flag = 0;
@@ -99,6 +100,10 @@ void *udp_listener(void *args) {
                 case 2:
                     c = atoi(tmp_number) % NUMBER_OF_STORED_C;
                     tmp_number_idx = 0;
+                    break;
+                case 3:
+                    depth = atoi(tmp_number);
+                    tmp_number_idx = 0;
                     flag = 1;
                     break;
             }
@@ -115,11 +120,12 @@ void *udp_listener(void *args) {
     double c_real = (*(generated_sets + c))->real;
     double c_imag = (*(generated_sets + c))->imaginary;
 
-    color **fractal = generate_julia(WIDTH, HEIGHT, x, y, c_real, c_imag, DEFAULT_DEPTH);
+    color **fractal = generate_julia(WIDTH, HEIGHT, x, y, c_real, c_imag, depth);
+    stop_show_window = 1;
 
     parameters.c_real = c_real;
     parameters.c_imaginary = c_imag;
-    parameters.depth = DEFAULT_DEPTH;
+    parameters.depth = depth;
     parameters.set_number = c;
     parameters.x = x;
     parameters.y = y;

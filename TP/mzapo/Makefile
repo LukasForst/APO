@@ -12,7 +12,7 @@ HEADERS = color.h sets.h main.h udp_server.h display_writting.h show_window.h
 SOURCES += font_prop14x16.c font_rom8x16.c
 SOURCES += color.c sets.c udp_server.c
 TARGET_EXE = program
-TARGET_IP ?= 192.168.202.166
+TARGET_IP ?= 192.168.202.184
 TARGET_DIR ?= /tmp/$(shell whoami)
 TARGET_USER ?= root
 

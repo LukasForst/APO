@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
     pthread_t drawing; //drawing thread
     pthread_t udp; //udp listener thread
     pthread_create(&udp, NULL, udp_listener, NULL); //let's start listening for the udp
+
     while (1) {
-        //TODO slow it down a little bit, reaction time of the people is slower 0.2 sec
         rgb_knobs_value = *(volatile uint32_t *) (mem_base + SPILED_REG_KNOBS_8BIT_o); //get uint with value
 
         isclicked_red = (rgb_knobs_value & 0xFF000000) >> 24 == 4 ? true : false;
@@ -106,8 +106,9 @@ int main(int argc, char *argv[]) {
             parameters.x = move_x;
             parameters.y = move_y;
 
-            if (pthread_create(&drawing, NULL, draw_set, fractal)) {
-                printf("ERROR occurred while creating new thread!\nexiting...\n");
+            int err = pthread_create(&drawing, NULL, draw_set, fractal);
+            if (err != 0) {
+                printf("ERROR occurred while creating new thread!\nReason: %s\nexiting...\n", strerror(err));
                 break;
             }
 
@@ -115,6 +116,7 @@ int main(int argc, char *argv[]) {
             last_y = move_y;
             last_depth = depth;
             last_c_sets = c_sets;
+            pthread_join(drawing, NULL);
         }
     }
 
@@ -164,6 +166,6 @@ void *draw_set(void *args) {
     }
 
     free(final_data);
-    pthread_exit(NULL);
+    return NULL;
 }
 
