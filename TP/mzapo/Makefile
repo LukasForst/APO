@@ -7,8 +7,8 @@ CXXFLAGS = -g -std=gnu++11 -O1
 #LDFLAGS = -lrt -lpthread
 LDFLAGS = -lrt -pthread
 
-SOURCES = main.c mzapo_phys.c mzapo_parlcd.c display_writting.c
-HEADERS = color.h sets.h main.h udp_server.h display_writting.h
+SOURCES = main.c mzapo_phys.c mzapo_parlcd.c display_writting.c show_window.c
+HEADERS = color.h sets.h main.h udp_server.h display_writting.h show_window.h
 SOURCES += font_prop14x16.c font_rom8x16.c
 SOURCES += color.c sets.c udp_server.c
 TARGET_EXE = program

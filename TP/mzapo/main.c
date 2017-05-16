@@ -25,11 +25,10 @@
 #include "color.h"
 #include "udp_server.h"
 #include "display_writting.h"
-
+#include "show_window.h"
 
 int main(int argc, char *argv[]) {
     uint32_t rgb_knobs_value;
-    unsigned char *mem_base;
     int i, j;
 
     //display and buttons init
@@ -85,7 +84,9 @@ int main(int argc, char *argv[]) {
         } else if (isclicked_green) {
             //do something
         } else if (isclicked_blue) {
-            //do something
+            //show window - animation with whole set array
+            sleep(1);
+            show_window();
         }
 
         if (last_x != move_x || last_y != move_y || last_c_sets != c_sets || last_depth != depth) {

@@ -10,8 +10,19 @@
 
 #include <stdint.h>
 
+/**
+ * Access to the lcd from everywhere.
+ * */
 unsigned char *parlcd_mem_base;
 
+/**
+ * Access to the buttons from everywhere.
+ * */
+unsigned char *mem_base;
+
+/**
+ * Structure containing parameters of the displayed image in the device.
+ * */
 typedef struct {
     double c_real;
     double c_imaginary;
