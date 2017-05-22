@@ -2,14 +2,17 @@ CC = arm-linux-gnueabihf-gcc
 CXX = arm-linux-gnueabihf-g++
 
 CPPFLAGS = -I .
-CFLAGS =-g -std=gnu99 -O1 -Wall
-CXXFLAGS = -g -std=gnu++11 -O1 -Wall
-LDFLAGS = -lrt -lpthread
+CFLAGS =-g -std=gnu99 -O1 -lpthread
+CXXFLAGS = -g -std=gnu++11 -O1
+#LDFLAGS = -lrt -lpthread
+LDFLAGS = -lrt -pthread
 
-SOURCES = main.c mzapo_phys.c mzapo_parlcd.c
-#SOURCES += font_prop14x16.c font_rom8x16.c
+SOURCES = main.c mzapo_phys.c mzapo_parlcd.c display_writting.c show_window.c
+HEADERS = color.h sets.h main.h udp_server.h display_writting.h show_window.h
+SOURCES += font_prop14x16.c font_rom8x16.c
+SOURCES += color.c sets.c udp_server.c
 TARGET_EXE = program
-TARGET_IP ?= 192.168.1.37
+TARGET_IP ?= 192.168.202.172
 TARGET_DIR ?= /tmp/$(shell whoami)
 TARGET_USER ?= root
 
@@ -52,8 +55,16 @@ ifneq ($(filter %.cpp,$(SOURCES)),)
 	  >> depend
 endif
 
+test: $(TARGET_EXE)
+	./program
+
 clean:
-	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend
+	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend APO-LukasForst.zip
+
+zip: $(TARGET_EXE)
+	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend APO-LukasForst.zip
+	zip APO-LukasForst.zip $(SOURCES) $(HEADERS)
+
 
 run: $(TARGET_EXE)
 	ssh $(TARGET_USER)@$(TARGET_IP) mkdir -p $(TARGET_DIR)
