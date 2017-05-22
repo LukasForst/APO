@@ -27,7 +27,6 @@ void show_window() {
     stop_show_window = false;
 
     int i, j, iter = 2;
-    bool break_flag = false;
 
     pthread_t buttons_check, drawing;
     int err = pthread_create(&buttons_check, NULL, check_end, NULL); //start thread which will be checking buttons
@@ -59,22 +58,29 @@ void show_window() {
                 int err = pthread_create(&drawing, NULL, draw_set, fractal);
                 if (err != 0) {
                     printf("ERROR occurred while creating new thread!\nReason: %s\nexiting...\n", strerror(err));
-                    break_flag = true;
+                    stop_show_window = true;
                     break;
                 }
 
-                iter = iter / 10; // faster grow of the depth
+                if (j < 20) { //faster grow of the depth
+                    iter = 1;
+                } else if (j < 100) {
+                    iter = 10;
+                } else if (j < 400) {
+                    iter = 20;
+                } else {
+                    iter = 150;
+                }
 
                 pthread_join(drawing, NULL); //wait for previous thread
                 if (stop_show_window) {
-                    break_flag = true;
                     break;
                 }
             }
-            if (break_flag) break;
+            if (stop_show_window) break;
             sleep(2); //wait 2 secs before showing another fractal
         }
-        if (break_flag) break;
+        if (stop_show_window) break;
     }
     //cleanup
     pthread_join(drawing, NULL);
@@ -97,9 +103,9 @@ void *check_end(void *args) {
     while (true) {
         rgb_knobs_value = *(volatile uint32_t *) (mem_base + SPILED_REG_KNOBS_8BIT_o); //get uint with value
 
-        isclicked_red = (rgb_knobs_value & 0xFF000000) >> 24 == 4 ? true : false;
-        isclicked_green = (rgb_knobs_value & 0xFF000000) >> 24 == 2 ? true : false;
-        isclicked_blue = (rgb_knobs_value & 0xFF000000) >> 24 == 1 ? true : false;
+        isclicked_red = (rgb_knobs_value & 0xFF000000) >> 24 == 4;
+        isclicked_green = (rgb_knobs_value & 0xFF000000) >> 24 == 2;
+        isclicked_blue = (rgb_knobs_value & 0xFF000000) >> 24 == 1;
 
         if (isclicked_red || isclicked_green || isclicked_blue || stop_show_window) {
             printf("Abort!\n");

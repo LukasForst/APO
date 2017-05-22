@@ -26,6 +26,8 @@
 #include "display_writting.h"
 #include "show_window.h"
 
+pthread_mutex_t lock;
+
 int main(int argc, char *argv[]) {
     uint32_t rgb_knobs_value;
     int i, j;
@@ -39,9 +41,14 @@ int main(int argc, char *argv[]) {
     }
     parlcd_hx8357_init(parlcd_mem_base);
 
+    if (pthread_mutex_init(&lock, NULL) != 0) {
+        printf("\nMutex init failed\n");
+        exit(2);
+    }
+
     //first settings of the Julia set
     double move_x = 0.0, move_y = 0.0; //-3,3 is max for x, -2,2 is max for y
-    uint32_t depth = 500, last_depth = depth;
+    uint32_t depth = START_DEPTH, last_depth = depth;
 
     //final memory for the image
     uint16_t *fractal;
@@ -61,12 +68,14 @@ int main(int argc, char *argv[]) {
     pthread_t udp; //udp listener thread
     pthread_create(&udp, NULL, udp_listener, NULL); //let's start listening for the udp
 
-    while (1) {
+    struct timespec loop_delay = {.tv_sec = 0, .tv_nsec = 200 * 1000 * 1000}; //delay in the buttons detection
+
+    while (true) {
         rgb_knobs_value = *(volatile uint32_t *) (mem_base + SPILED_REG_KNOBS_8BIT_o); //get uint with value
 
-        isclicked_red = (rgb_knobs_value & 0xFF000000) >> 24 == 4 ? true : false;
-        isclicked_green = (rgb_knobs_value & 0xFF000000) >> 24 == 2 ? true : false;
-        isclicked_blue = (rgb_knobs_value & 0xFF000000) >> 24 == 1 ? true : false;
+        isclicked_red = (rgb_knobs_value & 0xFF000000) >> 24 == 4;
+        isclicked_green = (rgb_knobs_value & 0xFF000000) >> 24 == 2;
+        isclicked_blue = (rgb_knobs_value & 0xFF000000) >> 24 == 1;
 
         r_value = (rgb_knobs_value & 0x00FF0000) >> 16; // red button value
         g_value = (rgb_knobs_value & 0x0000FF00) >> 8; // green button value
@@ -80,8 +89,6 @@ int main(int argc, char *argv[]) {
         } else if (isclicked_red) {
             depth = b_value * depth_range;
             was_clicked = true;
-        } else if (isclicked_green) {
-            //do something
         } else if (isclicked_blue) {
             //show window - animation with whole set array
             sleep(1);
@@ -117,8 +124,9 @@ int main(int argc, char *argv[]) {
             last_c_sets = c_sets;
             pthread_join(drawing, NULL);
         }
-    }
 
+        clock_nanosleep(CLOCK_MONOTONIC, 0, &loop_delay, NULL);
+    }
     //cleanup
     free(fractal);
 
@@ -127,12 +135,18 @@ int main(int argc, char *argv[]) {
     }
     free(generated_sets);
 
+    stop_udp_server = true;
+    pthread_join(udp, NULL); // stop upd server and wait for it
     pthread_cancel(udp);
+
+    pthread_mutex_destroy(&lock); //destroy mutex
     return 0;
 }
 
 
 void *draw_set(void *args) {
+    pthread_mutex_lock(&lock); //lock function
+
     uint16_t *fractal = (uint16_t *) args;
 
     char *text_template = "sum: %.2f + %.2fi\ndepth: %d\nset #: %d\nx = %.2f, y = %.2f";
@@ -152,6 +166,7 @@ void *draw_set(void *args) {
     }
 
     free(fractal);
+
+    pthread_mutex_unlock(&lock); //unlock function
     return NULL;
 }
-

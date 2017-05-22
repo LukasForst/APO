@@ -10,7 +10,7 @@
 /**
  * Setting this to the true will cause interrupt of the <i>show_window()</i>.
  * */
-bool stop_show_window;
+volatile bool stop_show_window;
 
 /**
  * Infinite loop with nice animation and lot of sets in the database.<br> Can be interrupted by

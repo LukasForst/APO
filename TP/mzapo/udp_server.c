@@ -23,6 +23,9 @@
 #include "show_window.h"
 
 void *udp_listener(void *args) {
+
+    stop_udp_server = false;
+
     /*----------------------------------------------------------------------------------------------------------------*/
     /*beej.us part START*/
 
@@ -64,7 +67,11 @@ void *udp_listener(void *args) {
 
     if (p == NULL) {
         fprintf(stderr, "listener: failed to bind socket\n");
-        return udp_listener(NULL);
+        if (stop_udp_server) {
+            return NULL;
+        } else {
+            return udp_listener(NULL);
+        }
     }
 
     freeaddrinfo(servinfo);
@@ -74,10 +81,13 @@ void *udp_listener(void *args) {
                              (struct sockaddr *) &their_addr, &addr_len)) == -1) {
         perror("recvfrom");
         close(sockfd);
-        return udp_listener(NULL);
+        if (stop_udp_server) {
+            return NULL;
+        } else {
+            return udp_listener(NULL);
+        }
     }
     buf[numbytes] = '\0';
-    printf("listener: packet contains \"%s\"\n", buf);
     close(sockfd);
 
     /*beej.us part END*/
@@ -88,6 +98,8 @@ void *udp_listener(void *args) {
     int tmp_number_idx = 0, number_of_spaces = 0;
     double x = 0, y = 0;
     uint32_t c = 0, depth = 0;
+
+    stop_show_window = true;    //stop show-window if it's running
 
     bool break_flag = false;
 
@@ -127,8 +139,6 @@ void *udp_listener(void *args) {
 
     uint16_t *fractal = generate_julia(WIDTH, HEIGHT, x, y, c_real, c_imag, depth);
 
-    stop_show_window = true;    //stop show-window if it's running
-
     parameters.c_real = c_real;
     parameters.c_imaginary = c_imag;
     parameters.depth = depth;
@@ -143,5 +153,10 @@ void *udp_listener(void *args) {
         free(*(generated_sets + i));
     }
     free(generated_sets);
-    return udp_listener(NULL); //call it again
+
+    if (stop_udp_server) {
+        return NULL;
+    } else {
+        return udp_listener(NULL);
+    }
 }

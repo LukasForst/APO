@@ -8,6 +8,8 @@
 #define WIDTH 480
 #define HEIGHT 320
 
+#define START_DEPTH 100
+
 #include <stdint.h>
 
 /**

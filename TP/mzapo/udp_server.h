@@ -9,6 +9,11 @@
 #define MAXBUFLEN 1024 //max size of the received datagram
 
 /**
+ * Stop UDP server and exit.
+ * */
+volatile bool stop_udp_server;
+
+/**
  * Simple UDP listener which is generating Julia sets according to the given parameters from udp datagram.
  * */
 void *udp_listener(void *args);

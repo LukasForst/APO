@@ -5,9 +5,9 @@
 #ifndef APO_COLOR_H
 #define APO_COLOR_H
 
-#include <stdint.h>
-
 #define DEFAULT_DEPTH 255
+
+#include <stdint.h>
 
 /**
  * Simple colors.
