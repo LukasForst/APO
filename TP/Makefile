@@ -8,7 +8,7 @@ CXXFLAGS = -g -std=gnu++11 -O1
 LDFLAGS = -lrt -pthread
 
 SOURCES = main.c mzapo_phys.c mzapo_parlcd.c display_writting.c show_window.c
-HEADERS = color.h sets.h main.h udp_server.h display_writting.h show_window.h
+HEADERS = color.h sets.h main.h udp_server.h display_writting.h show_window.h  font_types.h mzapo_parlcd.h mzapo_phys.h mzapo_regs.h
 SOURCES += font_prop14x16.c font_rom8x16.c
 SOURCES += color.c sets.c udp_server.c
 TARGET_EXE = program
@@ -55,20 +55,19 @@ ifneq ($(filter %.cpp,$(SOURCES)),)
 	  >> depend
 endif
 
-test: $(TARGET_EXE)
-	./program
-
 clean:
 	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend APO-LukasForst.zip
 
 zip: $(TARGET_EXE)
-	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend APO-LukasForst.zip
-	zip APO-LukasForst.zip $(SOURCES) $(HEADERS)
+	rm -f *.o *.a $(OBJECTS) $(TARGET_EXE) depend *.zip
+	zip APO-LukasForst.zip $(SOURCES) $(HEADERS) Makefile
 
 
 run: $(TARGET_EXE)
 	ssh $(TARGET_USER)@$(TARGET_IP) mkdir -p $(TARGET_DIR)
 	scp $(TARGET_EXE) $(TARGET_USER)@$(TARGET_IP):$(TARGET_DIR)/$(TARGET_EXE)
 	ssh -t $(TARGET_USER)@$(TARGET_IP) $(TARGET_DIR)/$(TARGET_EXE)
+start: $(TARGET_EXE)
+	./program
 
 -include depend
